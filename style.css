@@ -1,0 +1,53 @@
+body {
+  font-family: Arial, sans-serif;
+  background: #f0f4f8;
+  display: flex;
+  justify-content: center;
+  padding-top: 50px;
+}
+
+.container {
+  background: white;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  width: 400px;
+  text-align: center;
+}
+
+.input-group {
+  margin: 10px 0;
+}
+
+input {
+  padding: 5px;
+  width: 100px;
+}
+
+button {
+  margin-top: 15px;
+  padding: 10px 20px;
+  font-size: 16px;
+}
+
+.output {
+  margin-top: 20px;
+}
+
+.animation {
+  margin-top: 30px;
+  height: 40px;
+  background: #eee;
+  position: relative;
+  overflow: hidden;
+}
+
+#object {
+  width: 20px;
+  height: 20px;
+  background: #3498db;
+  position: absolute;
+  top: 10px;
+  left: 0;
+  border-radius: 50%;
+}

@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>1D Kinematics Simulator</title>
+  <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+  <div class="container">
+    <h1>1D Kinematics Simulator</h1>
+
+    <div class="input-group">
+      <label>Initial Velocity (m/s):</label>
+      <input type="number" id="velocity" value="0" />
+    </div>
+
+    <div class="input-group">
+      <label>Acceleration (m/s²):</label>
+      <input type="number" id="acceleration" value="0" />
+    </div>
+
+    <div class="input-group">
+      <label>Time (s):</label>
+      <input type="number" id="time" value="1" />
+    </div>
+
+    <button onclick="simulate()">Start Simulation</button>
+
+    <div class="output">
+      <p>Final Velocity: <span id="finalVelocity">0</span> m/s</p>
+      <p>Displacement: <span id="displacement">0</span> m</p>
+    </div>
+
+    <div class="animation">
+      <div id="object"></div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
