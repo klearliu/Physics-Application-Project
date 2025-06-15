@@ -1,53 +1,124 @@
+/* General Styles */
 body {
-  font-family: Arial, sans-serif;
-  background: #f0f4f8;
-  display: flex;
-  justify-content: center;
-  padding-top: 50px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #dbdbdb;
+    margin: 0;
+    padding: 10px; /* Reduced padding */
 }
 
-.container {
-  background: white;
-  padding: 30px;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  width: 400px;
-  text-align: center;
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 15px; /* Reduced margin */
 }
 
+h2 {
+    color: #34495e;
+    margin-top: 15px; /* Reduced margin */
+}
+
+/* Input Group Styles */
 .input-group {
-  margin: 10px 0;
+    margin: 10px auto; /* Center the input group */
+    background-color: #ffffff;
+    padding: 10px; /* Reduced padding */
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 25%; /* Set width to 25% of the page */
 }
 
-input {
-  padding: 5px;
-  width: 100px;
+label {
+    display: block;
+    margin-bottom: 4px; /* Reduced margin */
+    color: #2c3e50;
+    font-size: 14px; /* Reduced font size */
 }
 
+input[type="number"] {
+    width: calc(100% - 22px);
+    padding: 8px; /* Reduced padding */
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    font-size: 14px; /* Reduced font size */
+    transition: border-color 0.3s;
+}
+
+input[type="number"]:focus {
+    border-color: #3498db;
+    outline: none;
+}
+
+/* Checkbox Styles */
+input[type="checkbox"] {
+    margin-left: 10px;
+}
+
+/* Button Styles */
 button {
-  margin-top: 15px;
-  padding: 10px 20px;
-  font-size: 16px;
+    background-color: #3498db;
+    color: #ffffff;
+    border: none;
+    padding: 8px 12px; /* Reduced padding */
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px; /* Reduced font size */
+    transition: background-color 0.3s, transform 0.3s; /* Add transition for transform */
+    display: block; /* Make button a block element */
+    margin: 15px auto; /* Center the button */
 }
 
+button:hover {
+    background-color: #2980b9;
+    transform: scale(1.05); /* Slightly enlarge the button */
+}
+
+/* Output Styles */
 .output {
-  margin-top: 20px;
+    background-color: #ffffff;
+    border: 1px solid #bdc3c7;
+    border-radius: 5px;
+    padding: 10px; /* Reduced padding */
+    margin: 15px auto; /* Center the output box */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    width: 25%; /* Set width to 25% of the page */
+    text-align: center; /* Center the text inside the output box */
 }
 
+.output h1 {
+    margin: 0; /* Remove default margin */
+    color: #34495e; /* Set color for the results heading */
+    text-align: center; /* Center the results heading */
+}
+
+.output p {
+    margin: 4px 0; /* Reduced margin */
+    color: #2c3e50;
+    text-align: left; /* Left-align the output text */
+}
+
+/* Animation Styles */
 .animation {
-  margin-top: 30px;
-  height: 40px;
-  background: #eee;
-  position: relative;
-  overflow: hidden;
+    position: relative;
+    width: 25%; /* Set width to 25% of the page */
+    height: 80px; /* Reduced height */
+    border: 1px solid #bdc3c7;
+    background-color: #f4f4f4;
+    margin: 15px auto; /* Center the box */
+    border-radius: 5px;
 }
 
-#object {
-  width: 20px;
-  height: 20px;
-  background: #3498db;
-  position: absolute;
-  top: 10px;
-  left: 0;
-  border-radius: 50%;
+.moving-object {
+    position: absolute;
+    width: 80px; /* Reduced width */
+    height: 80px; /* Reduced height */
+    background-color: green;
+    border-radius: 50%; /* Keep it circular */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 600px) {
+    .input-group, .output, .animation {
+        width: 90%; /* Adjust width for smaller screens */
+    }
 }

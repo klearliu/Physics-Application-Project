@@ -1,42 +1,50 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>1D Kinematics Simulator</title>
-  <link rel="stylesheet" href="style.css"/>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>1D Kinematics Simulator</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="container">
     <h1>1D Kinematics Simulator</h1>
-
     <div class="input-group">
-      <label>Initial Velocity (m/s):</label>
-      <input type="number" id="velocity" value="0" />
+        <label for="v0">Initial Velocity (m/s):</label>
+        <input type="number" id="v0" placeholder="Enter initial velocity" />
+        <input type="checkbox" id="constant" />
+        <label for="constant">Constant</label>
     </div>
-
     <div class="input-group">
-      <label>Acceleration (m/s²):</label>
-      <input type="number" id="acceleration" value="0" />
+        <label for="v">Final Velocity (m/s):</label>
+        <input type="number" id="v" placeholder="Enter final velocity" />
     </div>
-
     <div class="input-group">
-      <label>Time (s):</label>
-      <input type="number" id="time" value="1" />
+        <label for="a">Acceleration (m/s<sup>2</sup>):</label>
+        <input type="number" id="a" placeholder="Enter acceleration" />
     </div>
+    <div class="input-group">
+        <label for="t">Time (s):</label>
+        <input type="number" id="t" placeholder="Enter time" />
+    </div>
+    <div class="input-group">
+        <label for="x">Displacement (m):</label>
+        <input type="number" id="x" placeholder="Enter displacement" />
+    </div>
+    <button onclick="solve()">Calculate</button>
 
-    <button onclick="simulate()">Start Simulation</button>
-
+    <h1>Results</h1>
     <div class="output">
-      <p>Final Velocity: <span id="finalVelocity">0</span> m/s</p>
-      <p>Displacement: <span id="displacement">0</span> m</p>
+        <p>Initial Velocity: <span id="output-v0">-</span> m/s</p>
+        <p>Final Velocity: <span id="output-v">-</span> m/s</p>
+        <p>Acceleration: <span id="output-a">-</span> m/s<sup>2</sup></p>
+        <p>Time: <span id="output-t">-</span> s</p>
+        <p>Displacement: <span id="output-x">-</span> m</p>
     </div>
 
     <div class="animation">
-      <div id="object"></div>
+        <div id="object" class="moving-object"></div>
     </div>
-  </div>
 
-  <script src="script.js"></script>
+    <script src="script.js"></script>
 </body>
 </html>
