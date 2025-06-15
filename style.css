@@ -1,124 +1,126 @@
 /* General Styles */
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #dbdbdb;
-    margin: 0;
-    padding: 10px; /* Reduced padding */
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #dbdbdb;
+  margin: 0;
+  padding: 10px;
 }
 
 h1 {
-    text-align: center;
-    color: #2c3e50;
-    margin-bottom: 15px; /* Reduced margin */
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 15px;
 }
 
 h2 {
-    color: #34495e;
-    margin-top: 15px; /* Reduced margin */
+  color: #34495e;
+  margin-top: 15px;
 }
 
 /* Input Group Styles */
 .input-group {
-    margin: 10px auto; /* Center the input group */
-    background-color: #ffffff;
-    padding: 10px; /* Reduced padding */
-    border-radius: 5px;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 25%; /* Set width to 25% of the page */
+  margin: 10px auto;
+  background-color: #ffffff;
+  padding: 10px;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 25%;
 }
 
 label {
-    display: block;
-    margin-bottom: 4px; /* Reduced margin */
-    color: #2c3e50;
-    font-size: 14px; /* Reduced font size */
+  display: block;
+  margin-bottom: 4px;
+  color: #2c3e50;
+  font-size: 14px;
 }
 
 input[type="number"] {
-    width: calc(100% - 22px);
-    padding: 8px; /* Reduced padding */
-    border: 1px solid #bdc3c7;
-    border-radius: 4px;
-    font-size: 14px; /* Reduced font size */
-    transition: border-color 0.3s;
+  width: calc(100% - 22px);
+  padding: 8px;
+  border: 1px solid #bdc3c7;
+  border-radius: 4px;
+  font-size: 14px;
+  transition: border-color 0.3s;
 }
 
 input[type="number"]:focus {
-    border-color: #3498db;
-    outline: none;
+  border-color: #3498db;
+  outline: none;
 }
 
 /* Checkbox Styles */
 input[type="checkbox"] {
-    margin-left: 10px;
+  margin-left: 10px;
 }
 
 /* Button Styles */
 button {
-    background-color: #3498db;
-    color: #ffffff;
-    border: none;
-    padding: 8px 12px; /* Reduced padding */
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 14px; /* Reduced font size */
-    transition: background-color 0.3s, transform 0.3s; /* Add transition for transform */
-    display: block; /* Make button a block element */
-    margin: 15px auto; /* Center the button */
+  background-color: #3498db;
+  color: #ffffff;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: background-color 0.3s, transform 0.3s;
+  display: block;
+  margin: 15px auto;
 }
 
 button:hover {
-    background-color: #2980b9;
-    transform: scale(1.05); /* Slightly enlarge the button */
+  background-color: #2980b9;
+  transform: scale(1.05);
 }
 
 /* Output Styles */
 .output {
-    background-color: #ffffff;
-    border: 1px solid #bdc3c7;
-    border-radius: 5px;
-    padding: 10px; /* Reduced padding */
-    margin: 15px auto; /* Center the output box */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-    width: 25%; /* Set width to 25% of the page */
-    text-align: center; /* Center the text inside the output box */
+  background-color: #ffffff;
+  border: 1px solid #bdc3c7;
+  border-radius: 5px;
+  padding: 10px;
+  margin: 15px auto;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  width: 25%;
+  text-align: center;
 }
 
 .output h1 {
-    margin: 0; /* Remove default margin */
-    color: #34495e; /* Set color for the results heading */
-    text-align: center; /* Center the results heading */
+  margin: 0;
+  color: #34495e;
+  text-align: center;
 }
 
 .output p {
-    margin: 4px 0; /* Reduced margin */
-    color: #2c3e50;
-    text-align: left; /* Left-align the output text */
+  margin: 4px 0;
+  color: #2c3e50;
+  text-align: left;
 }
 
 /* Animation Styles */
 .animation {
-    position: relative;
-    width: 25%; /* Set width to 25% of the page */
-    height: 80px; /* Reduced height */
-    border: 1px solid #bdc3c7;
-    background-color: #f4f4f4;
-    margin: 15px auto; /* Center the box */
-    border-radius: 5px;
+  position: relative;
+  width: 25%;
+  height: 80px;
+  border: 1px solid #bdc3c7;
+  background-color: #f4f4f4;
+  margin: 15px auto;
+  border-radius: 5px;
 }
 
 .moving-object {
-    position: absolute;
-    width: 80px; /* Reduced width */
-    height: 80px; /* Reduced height */
-    background-color: green;
-    border-radius: 50%; /* Keep it circular */
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  position: absolute;
+  width: 80px;
+  height: 80px;
+  background-color: green;
+  border-radius: 50%;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 /* Media Queries for Responsive Design */
 @media (max-width: 600px) {
-    .input-group, .output, .animation {
-        width: 90%; /* Adjust width for smaller screens */
-    }
+  .input-group,
+  .output,
+  .animation {
+    width: 90%;
+  }
 }

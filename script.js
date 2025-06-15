@@ -1,13 +1,14 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const v0Input = document.getElementById('v0');
-  const vInput = document.getElementById('v');
-  const aInput = document.getElementById('a');
-  const constantCheckbox = document.getElementById('constant');
+document.addEventListener("DOMContentLoaded", () => {
+  // Variables
+  const v0Input = document.getElementById("v0");
+  const vInput = document.getElementById("v");
+  const aInput = document.getElementById("a");
+  const constantCheckbox = document.getElementById("constant");
 
   // Event listener for the constant checkbox
-  constantCheckbox.addEventListener('change', () => {
+  constantCheckbox.addEventListener("change", () => {
     if (constantCheckbox.checked && !isNaN(parseFloat(v0Input.value))) {
-      vInput.value = v0Input.value; // Set final velocity to initial velocity
+      vInput.value = v0Input.value; // Set final velocity = initial velocity
       vInput.disabled = true; // Disable final velocity input
       aInput.value = 0; // Set acceleration to 0
       aInput.disabled = true; // Disable acceleration input
@@ -19,18 +20,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function solve() {
-  let v0 = parseFloat(document.getElementById('v0').value);
-  let v = parseFloat(document.getElementById('v').value);
-  let a = parseFloat(document.getElementById('a').value);
-  let t = parseFloat(document.getElementById('t').value);
-  let x = parseFloat(document.getElementById('x').value);
+  // Retrieving values from user inputs and converting them to floats
+  let v0 = parseFloat(document.getElementById("v0").value);
+  let v = parseFloat(document.getElementById("v").value);
+  let a = parseFloat(document.getElementById("a").value);
+  let t = parseFloat(document.getElementById("t").value);
+  let x = parseFloat(document.getElementById("x").value);
 
+  // Creating known object to see if each inputs are valid
   const known = {
     v0: !isNaN(v0),
     v: !isNaN(v),
     a: !isNaN(a),
     t: !isNaN(t),
-    x: !isNaN(x)
+    x: !isNaN(x),
   };
 
   // 1. Solve time using quadratic: x = v0*t + 0.5*a*t^2
@@ -65,7 +68,7 @@ function solve() {
 
   // 4. If x, v0, t → a
   if (!known.a && known.x && known.v0 && known.t) {
-    a = (x - v0 * t) * 2 / (t * t);
+    a = ((x - v0 * t) * 2) / (t * t);
     known.a = true;
   }
 
@@ -101,7 +104,7 @@ function solve() {
 
   // 10. If x, t, v → v0
   if (!known.v0 && known.x && known.t && known.v) {
-    v0 = (2 * x / t) - v;
+    v0 = (2 * x) / t - v;
     known.v0 = true;
   }
 
@@ -114,21 +117,23 @@ function solve() {
   }
 
   // Output
-  document.getElementById('output-v0').innerText = known.v0 ? v0.toFixed(3) : '-';
-  document.getElementById('output-v').innerText = known.v ? v.toFixed(3) : '-';
-  document.getElementById('output-a').innerText = known.a ? a.toFixed(3) : '-';
-  document.getElementById('output-t').innerText = known.t ? t.toFixed(3) : '-';
-  document.getElementById('output-x').innerText = known.x ? x.toFixed(3) : '-';
+  document.getElementById("output-v0").innerText = known.v0
+    ? v0.toFixed(3)
+    : "-";
+  document.getElementById("output-v").innerText = known.v ? v.toFixed(3) : "-";
+  document.getElementById("output-a").innerText = known.a ? a.toFixed(3) : "-";
+  document.getElementById("output-t").innerText = known.t ? t.toFixed(3) : "-";
+  document.getElementById("output-x").innerText = known.x ? x.toFixed(3) : "-";
 
   // Animation
-  const object = document.getElementById('object');
-  const container = document.querySelector('.animation');
+  const object = document.getElementById("object");
+  const container = document.querySelector(".animation");
   const containerWidth = container.clientWidth;
   const objectWidth = object.clientWidth;
   const maxPosition = containerWidth - objectWidth;
 
-  object.style.transition = 'none';
-  object.style.left = '0px';
+  object.style.transition = "none";
+  object.style.left = "0px";
 
   if (known.t) {
     setTimeout(() => {
