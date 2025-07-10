@@ -3,48 +3,452 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>1D Kinematics Simulator</title>
-    <link rel="stylesheet" href="style.css" />
+    <title>Motion Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      /* Custom CSS for the toggle switch */
+      .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 60px;
+        height: 34px;
+      }
+
+      .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+
+      .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        -webkit-transition: 0.4s;
+        transition: 0.4s;
+        border-radius: 34px;
+      }
+
+      .slider:before {
+        position: absolute;
+        content: "";
+        height: 26px;
+        width: 26px;
+        left: 4px;
+        bottom: 4px;
+        background-color: white;
+        -webkit-transition: 0.4s;
+        transition: 0.4s;
+        border-radius: 50%;
+      }
+
+      input:checked + .slider {
+        background-color: #2196f3; /* Blue */
+      }
+
+      input:focus + .slider {
+        box-shadow: 0 0 1px #2196f3;
+      }
+
+      input:checked + .slider:before {
+        -webkit-transform: translateX(26px);
+        -ms-transform: translateX(26px);
+        transform: translateX(26px);
+      }
+    </style>
   </head>
-  <body>
-    <h1>1D Kinematics Simulator</h1>
-    <div class="input-group">
-      <label for="v0">Initial Velocity (m/s):</label>
-      <input type="number" id="v0" placeholder="Enter initial velocity" />
-      <input type="checkbox" id="constant" />
-      <label for="constant">Constant</label>
-    </div>
-    <div class="input-group">
-      <label for="v">Final Velocity (m/s):</label>
-      <input type="number" id="v" placeholder="Enter final velocity" />
-    </div>
-    <div class="input-group">
-      <label for="a">Acceleration (m/s<sup>2</sup>):</label>
-      <input type="number" id="a" placeholder="Enter acceleration" />
-    </div>
-    <div class="input-group">
-      <label for="t">Time (s):</label>
-      <input type="number" id="t" placeholder="Enter time" />
-    </div>
-    <div class="input-group">
-      <label for="x">Displacement (m):</label>
-      <input type="number" id="x" placeholder="Enter displacement" />
-    </div>
-    <button onclick="solve()">Calculate</button>
+  <body class="bg-gray-100 text-gray-800 min-h-screen p-6">
+    <div class="max-w-6xl mx-auto bg-white shadow-md rounded-lg p-6">
+      <h1 class="text-2xl font-bold mb-6 text-center">Motion Simulator</h1>
 
-    <h1>Results</h1>
-    <div class="output">
-      <p>Initial Velocity: <span id="output-v0">-</span> m/s</p>
-      <p>Final Velocity: <span id="output-v">-</span> m/s</p>
-      <p>Acceleration: <span id="output-a">-</span> m/s<sup>2</sup></p>
-      <p>Time: <span id="output-t">-</span> s</p>
-      <p>Displacement: <span id="output-x">-</span> m</p>
-    </div>
+      <div class="flex flex-col lg:flex-row gap-8">
+        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 lg:w-1/3">
+          <h2 class="text-lg font-semibold mb-4">Controls</h2>
+          <div class="space-y-4">
+            <div>
+              <label
+                for="initial-velocity"
+                class="block text-sm font-medium mb-1"
+                >Initial Velocity [m/s]</label
+              >
+              <input
+                type="number"
+                id="initial-velocity"
+                class="w-full p-2 border border-gray-300 rounded"
+                step="any"
+              />
+              <div class="flex items-center mt-2 space-x-2">
+                <input
+                  type="checkbox"
+                  id="constant-velocity"
+                  class="accent-blue-600"
+                />
+                <label for="constant-velocity" class="text-sm"
+                  >Constant Velocity</label
+                >
+              </div>
+            </div>
 
-    <div class="animation">
-      <div id="object" class="moving-object"></div>
-    </div>
+            <div>
+              <label for="final-velocity" class="block text-sm font-medium mb-1"
+                >Final Velocity [m/s]</label
+              >
+              <input
+                type="number"
+                id="final-velocity"
+                class="w-full p-2 border border-gray-300 rounded"
+                step="any"
+              />
+            </div>
 
-    <script src="script.js"></script>
+            <div>
+              <label for="acceleration" class="block text-sm font-medium mb-1"
+                >Acceleration [m/s²]</label
+              >
+              <input
+                type="number"
+                id="acceleration"
+                class="w-full p-2 border border-gray-300 rounded"
+                step="any"
+              />
+            </div>
+
+            <div>
+              <label for="time" class="block text-sm font-medium mb-1"
+                >Time [s]</label
+              >
+              <input
+                type="number"
+                id="time"
+                min="0"
+                class="w-full p-2 border border-gray-300 rounded"
+                step="any"
+              />
+            </div>
+
+            <div>
+              <label for="displacement" class="block text-sm font-medium mb-1"
+                >Displacement [m]</label
+              >
+              <input
+                type="number"
+                id="displacement"
+                class="w-full p-2 border border-gray-300 rounded"
+                step="any"
+              />
+            </div>
+
+            <div class="flex items-center mb-4">
+              <label for="projectile-mode" class="text-sm font-medium mr-3"
+                >Projectile Mode</label
+              >
+              <label class="toggle-switch">
+                <input type="checkbox" id="projectile-mode" />
+                <span class="slider"></span>
+              </label>
+            </div>
+
+            <div id="projectile-inputs-container" class="hidden space-y-4">
+              <div>
+                <label
+                  for="initial-height"
+                  class="block text-sm font-medium mb-1"
+                  >Initial Height [m]</label
+                >
+                <input
+                  type="number"
+                  id="initial-height"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  value="0"
+                  min="0"
+                  step="any"
+                />
+              </div>
+
+              <div>
+                <label for="launch-angle" class="block text-sm font-medium mb-1"
+                  >Launch Angle [°]</label
+                >
+                <input
+                  type="number"
+                  id="launch-angle"
+                  min="0"
+                  max="90"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  step="any"
+                />
+              </div>
+            </div>
+
+            <div class="flex gap-4 pt-2">
+              <button
+                id="start-btn"
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded w-full"
+              >
+                Start
+              </button>
+              <button
+                id="reset-btn"
+                class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded w-full"
+              >
+                Reset
+              </button>
+              <button
+                id="calculate-btn"
+                class="bg-gray-400 text-white font-semibold py-2 px-4 rounded w-full"
+                disabled
+              >
+                Calculate
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="lg:w-2/3">
+          <canvas
+            id="simulation-canvas"
+            width="800"
+            height="500"
+            class="w-full rounded-lg border border-blue-500 bg-blue-50 shadow"
+          ></canvas>
+
+          <div class="mt-6">
+            <h2 class="text-lg font-semibold mb-4">Results (Two Solutions)</h2>
+            <div
+              class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded"
+            >
+              <div class="border p-4 rounded shadow">
+                <h3 class="font-bold text-center mb-2">Solution 1</h3>
+                <p>
+                  Initial Velocity:
+                  <span id="output-v0-1" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m/s
+                </p>
+                <p>
+                  Initial Height:
+                  <span id="output-h-1" class="text-blue-600 font-mono">-</span>
+                  m
+                </p>
+                <p>
+                  Launch Angle:
+                  <span id="output-angle-1" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  °
+                </p>
+                <p>
+                  Range:
+                  <span id="output-range-1" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m
+                </p>
+                <p>
+                  Max Height:
+                  <span id="output-max-height-1" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m
+                </p>
+                <p>
+                  Flight Time:
+                  <span
+                    id="output-flight-time-1"
+                    class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  s
+                </p>
+              </div>
+
+              <div class="border p-4 rounded shadow">
+                <h3 class="font-bold text-center mb-2">Solution 2</h3>
+                <p>
+                  Initial Velocity:
+                  <span id="output-v0-2" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m/s
+                </p>
+                <p>
+                  Initial Height:
+                  <span id="output-h-2" class="text-blue-600 font-mono">-</span>
+                  m
+                </p>
+                <p>
+                  Launch Angle:
+                  <span id="output-angle-2" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  °
+                </p>
+                <p>
+                  Range:
+                  <span id="output-range-2" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m
+                </p>
+                <p>
+                  Max Height:
+                  <span id="output-max-height-2" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m
+                </p>
+                <p>
+                  Flight Time:
+                  <span
+                    id="output-flight-time-2"
+                    class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  s
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const projectileModeCheckbox =
+          document.getElementById("projectile-mode");
+        const projectileInputsContainer = document.getElementById(
+          "projectile-inputs-container"
+        );
+        const constantVelocityCheckbox =
+          document.getElementById("constant-velocity");
+        const initialVelocityInput =
+          document.getElementById("initial-velocity");
+        const finalVelocityInput = document.getElementById("final-velocity");
+        const accelerationInput = document.getElementById("acceleration");
+        const calculateButton = document.getElementById("calculate-btn");
+
+        // Array of all relevant input IDs
+        const allInputs = [
+          "initial-velocity",
+          "final-velocity",
+          "acceleration",
+          "time",
+          "displacement",
+          "initial-height",
+          "launch-angle",
+        ];
+
+        // Function to update the calculate button state
+        function updateCalculateButtonState() {
+          let relevantInputs = [];
+
+          if (projectileModeCheckbox.checked) {
+            relevantInputs = [
+              "initial-velocity",
+              "initial-height",
+              "launch-angle",
+              "time",
+              "displacement",
+            ];
+          } else {
+            relevantInputs = [
+              "initial-velocity",
+              "final-velocity",
+              "acceleration",
+              "time",
+              "displacement",
+            ];
+          }
+
+          const filledInputs = relevantInputs.filter((id) => {
+            const inputElement = document.getElementById(id);
+            if (!inputElement) return false;
+
+            // If constant velocity is checked, acceleration and final velocity shouldn't count as separate user-provided inputs.
+            if (
+              constantVelocityCheckbox.checked &&
+              (id === "acceleration" || id === "final-velocity")
+            ) {
+              return false;
+            }
+
+            return inputElement.value !== "";
+          }).length;
+
+          const requiredInputs = projectileModeCheckbox.checked ? 3 : 3;
+
+          if (filledInputs >= requiredInputs) {
+            calculateButton.disabled = false;
+            calculateButton.classList.remove("bg-gray-400");
+            calculateButton.classList.add("bg-green-600", "hover:bg-green-700");
+          } else {
+            calculateButton.disabled = true;
+            calculateButton.classList.add("bg-gray-400");
+            calculateButton.classList.remove(
+              "bg-green-600",
+              "hover:bg-green-700"
+            );
+          }
+        }
+
+        // Event listener for Projectile Mode checkbox
+        projectileModeCheckbox.addEventListener("change", function () {
+          projectileInputsContainer.classList.toggle("hidden", !this.checked);
+          // Reset projectile inputs when switching modes
+          document.getElementById("initial-height").value = "0";
+          document.getElementById("launch-angle").value = "";
+          updateCalculateButtonState();
+        });
+
+        // Event listener for Constant Velocity checkbox
+        constantVelocityCheckbox.addEventListener("change", function () {
+          if (this.checked) {
+            // Disable acceleration and set to 0
+            accelerationInput.value = "0";
+            accelerationInput.disabled = true;
+            accelerationInput.classList.add("bg-gray-200");
+
+            // Copy initial velocity to final velocity and disable final velocity
+            finalVelocityInput.value = initialVelocityInput.value;
+            finalVelocityInput.disabled = true;
+            finalVelocityInput.classList.add("bg-gray-200");
+          } else {
+            // Enable acceleration and final velocity
+            accelerationInput.value = ""; // Clear acceleration
+            accelerationInput.disabled = false;
+            accelerationInput.classList.remove("bg-gray-200");
+
+            finalVelocityInput.value = ""; // Clear final velocity
+            finalVelocityInput.disabled = false;
+            finalVelocityInput.classList.remove("bg-gray-200");
+          }
+          updateCalculateButtonState();
+        });
+
+        // Add an event listener to initial velocity to update final velocity if constant velocity is checked
+        initialVelocityInput.addEventListener("input", function () {
+          if (constantVelocityCheckbox.checked) {
+            finalVelocityInput.value = this.value;
+          }
+          updateCalculateButtonState();
+        });
+
+        // Add event listeners to all relevant input fields to update button state
+        allInputs.forEach((id) => {
+          const inputElement = document.getElementById(id);
+          if (inputElement) {
+            inputElement.addEventListener("input", updateCalculateButtonState);
+          }
+        });
+
+        // Initial state update when the page loads
+        updateCalculateButtonState();
+      });
+    </script>
   </body>
 </html>

@@ -1,144 +1,114 @@
+
 document.addEventListener("DOMContentLoaded", () => {
-  // Variables
-  const v0Input = document.getElementById("v0");
+  const v0Input = document.getElementById("v0") || document.getElementById("velocity");
   const vInput = document.getElementById("v");
   const aInput = document.getElementById("a");
   const constantCheckbox = document.getElementById("constant");
 
-  // Event listener for the constant checkbox
-  constantCheckbox.addEventListener("change", () => {
-    if (constantCheckbox.checked && !isNaN(parseFloat(v0Input.value))) {
-      vInput.value = v0Input.value; // Set final velocity = initial velocity
-      vInput.disabled = true; // Disable final velocity input
-      aInput.value = 0; // Set acceleration to 0
-      aInput.disabled = true; // Disable acceleration input
-    } else {
-      vInput.disabled = false; // Enable final velocity input
-      aInput.disabled = false; // Enable acceleration input
-    }
-  });
+  if (constantCheckbox) {
+    constantCheckbox.addEventListener("change", () => {
+      if (constantCheckbox.checked && !isNaN(parseFloat(v0Input.value))) {
+        vInput.value = v0Input.value;
+        vInput.disabled = true;
+        aInput.value = 0;
+        aInput.disabled = true;
+      } else {
+        vInput.disabled = false;
+        aInput.disabled = false;
+      }
+    });
+  }
 });
 
 function solve() {
-  // Retrieving values from user inputs and converting them to floats
-  let v0 = parseFloat(document.getElementById("v0").value);
-  let v = parseFloat(document.getElementById("v").value);
-  let a = parseFloat(document.getElementById("a").value);
-  let t = parseFloat(document.getElementById("t").value);
-  let x = parseFloat(document.getElementById("x").value);
+  const g = parseFloat(document.getElementById("gravity")?.value || 9.81);
+  const h0 = parseFloat(document.getElementById("initial-height")?.value || 0);
+  const angleInput = parseFloat(document.getElementById("angle")?.value || 0);
+  const v0 = parseFloat(document.getElementById("v0")?.value || document.getElementById("velocity")?.value || 0);
 
-  // Creating known object to see if each inputs are valid
-  const known = {
-    v0: !isNaN(v0),
-    v: !isNaN(v),
-    a: !isNaN(a),
-    t: !isNaN(t),
-    x: !isNaN(x),
-  };
+  // If we have a launch angle and velocity, solve projectile motion
+  if (!isNaN(angleInput) && angleInput > 0 && !isNaN(v0) && v0 > 0) {
+    solveProjectile(v0, angleInput, h0, g);
+  } else {
+    solveKinematics();
+  }
+}
 
-  // 1. Solve time using quadratic: x = v0*t + 0.5*a*t^2
-  if (!known.t && known.v0 && known.a && known.x) {
-    const discriminant = v0 * v0 + 2 * a * x;
-    if (a === 0) {
-      // Linear case
-      t = x / v0;
-      known.t = true;
-    } else if (discriminant >= 0) {
-      const root1 = (-v0 + Math.sqrt(discriminant)) / a;
-      const root2 = (-v0 - Math.sqrt(discriminant)) / a;
-      t = Math.max(root1, root2); // Use the positive time
-      known.t = true;
-    }
+function solveProjectile(v0, angleDeg, h0, g) {
+  const angleRad = angleDeg * (Math.PI / 180);
+  const vx = v0 * Math.cos(angleRad);
+  const vy = v0 * Math.sin(angleRad);
+
+  const flightTime = (vy + Math.sqrt(vy * vy + 2 * g * h0)) / g;
+  const maxHeight = h0 + (vy * vy) / (2 * g);
+  const range = vx * flightTime;
+
+  // Output first solution
+  document.getElementById("output-v0-1").innerText = v0.toFixed(2);
+  document.getElementById("output-h-1").innerText = h0.toFixed(2);
+  document.getElementById("output-angle-1").innerText = angleDeg.toFixed(2);
+  document.getElementById("output-range-1").innerText = range.toFixed(2);
+  document.getElementById("output-max-height-1").innerText = maxHeight.toFixed(2);
+  document.getElementById("output-flight-time-1").innerText = flightTime.toFixed(2);
+
+  // Second solution using complementary angle (if within 0-90 range)
+  const angleDeg2 = 90 - angleDeg;
+  if (angleDeg2 > 0) {
+    const angleRad2 = angleDeg2 * (Math.PI / 180);
+    const vx2 = v0 * Math.cos(angleRad2);
+    const vy2 = v0 * Math.sin(angleRad2);
+    const flightTime2 = (vy2 + Math.sqrt(vy2 * vy2 + 2 * g * h0)) / g;
+    const maxHeight2 = h0 + (vy2 * vy2) / (2 * g);
+    const range2 = vx2 * flightTime2;
+
+    document.getElementById("output-v0-2").innerText = v0.toFixed(2);
+    document.getElementById("output-h-2").innerText = h0.toFixed(2);
+    document.getElementById("output-angle-2").innerText = angleDeg2.toFixed(2);
+    document.getElementById("output-range-2").innerText = range2.toFixed(2);
+    document.getElementById("output-max-height-2").innerText = maxHeight2.toFixed(2);
+    document.getElementById("output-flight-time-2").innerText = flightTime2.toFixed(2);
+  }
+}
+
+function solveKinematics() {
+  let v0 = parseFloat(document.getElementById("v0")?.value || document.getElementById("velocity")?.value || 0);
+  let v = parseFloat(document.getElementById("v")?.value || 0);
+  let a = parseFloat(document.getElementById("a")?.value || 0);
+  let t = parseFloat(document.getElementById("t")?.value || 0);
+  let x = parseFloat(document.getElementById("x")?.value || 0);
+
+  // Count how many values are filled in
+  let filled = [!isNaN(v0), !isNaN(v), !isNaN(a), !isNaN(t), !isNaN(x)].filter(Boolean).length;
+  if (filled < 3) {
+    alert("Please enter at least three known values to calculate the others.");
+    return;
   }
 
-  // 2. Solve final velocity using: v² = v0² + 2ax
-  if (!known.v && known.v0 && known.a && known.x) {
-    const underRoot = v0 * v0 + 2 * a * x;
-    if (underRoot >= 0) {
-      v = Math.sqrt(underRoot);
-      known.v = true;
-    }
-  }
-
-  // 3. If v, v0, a → t
-  if (!known.t && known.v && known.v0 && known.a) {
-    t = (v - v0) / a;
-    known.t = true;
-  }
-
-  // 4. If x, v0, t → a
-  if (!known.a && known.x && known.v0 && known.t) {
-    a = ((x - v0 * t) * 2) / (t * t);
-    known.a = true;
-  }
-
-  // 5. If v, v0, a → x
-  if (!known.x && known.v && known.v0 && known.a) {
-    x = (v * v - v0 * v0) / (2 * a);
-    known.x = true;
-  }
-
-  // 6. If v0, a, t → v
-  if (!known.v && known.v0 && known.a && known.t) {
+  // Solve missing values based on equations of motion
+  if (isNaN(v) && !isNaN(v0) && !isNaN(a) && !isNaN(t)) {
     v = v0 + a * t;
-    known.v = true;
   }
 
-  // 7. If v, a, t → v0
-  if (!known.v0 && known.v && known.a && known.t) {
-    v0 = v - a * t;
-    known.v0 = true;
-  }
-
-  // 8. If v0, t, a → x
-  if (!known.x && known.v0 && known.t && known.a) {
+  if (isNaN(x) && !isNaN(v0) && !isNaN(t) && !isNaN(a)) {
     x = v0 * t + 0.5 * a * t * t;
-    known.x = true;
   }
 
-  // 9. If x, v0, v → t
-  if (!known.t && known.x && known.v0 && known.v) {
-    t = (2 * x) / (v + v0);
-    known.t = true;
+  if (isNaN(t) && !isNaN(v) && !isNaN(v0) && !isNaN(a) && a !== 0) {
+    t = (v - v0) / a;
   }
 
-  // 10. If x, t, v → v0
-  if (!known.v0 && known.x && known.t && known.v) {
-    v0 = (2 * x) / t - v;
-    known.v0 = true;
+  if (isNaN(v0) && !isNaN(v) && !isNaN(a) && !isNaN(t)) {
+    v0 = v - a * t;
   }
 
-  // New calculations for acceleration and displacement if v0, v, and t are known
-  if (known.v0 && known.v && known.t) {
-    a = (v - v0) / t; // Calculate acceleration
-    x = ((v + v0) / 2) * t; // Calculate displacement
-    known.a = true;
-    known.x = true;
+  if (isNaN(a) && !isNaN(v) && !isNaN(v0) && !isNaN(t) && t !== 0) {
+    a = (v - v0) / t;
   }
 
-  // Output
-  document.getElementById("output-v0").innerText = known.v0
-    ? v0.toFixed(3)
-    : "-";
-  document.getElementById("output-v").innerText = known.v ? v.toFixed(3) : "-";
-  document.getElementById("output-a").innerText = known.a ? a.toFixed(3) : "-";
-  document.getElementById("output-t").innerText = known.t ? t.toFixed(3) : "-";
-  document.getElementById("output-x").innerText = known.x ? x.toFixed(3) : "-";
-
-  // Animation
-  const object = document.getElementById("object");
-  const container = document.querySelector(".animation");
-  const containerWidth = container.clientWidth;
-  const objectWidth = object.clientWidth;
-  const maxPosition = containerWidth - objectWidth;
-
-  object.style.transition = "none";
-  object.style.left = "0px";
-
-  if (known.t) {
-    setTimeout(() => {
-      object.style.transition = `${t}s linear`;
-      object.style.left = `${maxPosition}px`;
-    }, 50);
-  }
+  // Update UI
+  document.getElementById("output-v0")?.innerText = v0.toFixed(2);
+  document.getElementById("output-v")?.innerText = v.toFixed(2);
+  document.getElementById("output-a")?.innerText = a.toFixed(2);
+  document.getElementById("output-t")?.innerText = t.toFixed(2);
+  document.getElementById("output-x")?.innerText = x.toFixed(2);
 }
