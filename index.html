@@ -2,10 +2,9 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Motion Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Link to the external stylesheet -->
     <link rel="stylesheet" href="style.css" />
   </head>
   <body class="bg-gray-100 text-gray-800 min-h-screen p-6">
@@ -27,17 +26,19 @@
             </div>
 
             <div>
-              <label
-                for="initial-velocity"
-                class="block text-sm font-medium mb-1"
-                >Initial Velocity [m/s]</label
-              >
-              <input
-                type="number"
-                id="initial-velocity"
-                class="w-full p-2 border border-gray-300 rounded"
-                step="any"
-              />
+              <div>
+                <label
+                  for="initial-velocity"
+                  class="block text-sm font-medium mb-1"
+                  >Initial Velocity [m/s]</label
+                >
+                <input
+                  type="number"
+                  id="initial-velocity"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  step="any"
+                />
+              </div>
               <div
                 id="constant-velocity-control-row"
                 class="flex items-center mt-2 space-x-2"
@@ -53,6 +54,37 @@
               </div>
             </div>
 
+            <div id="projectile-inputs-container" class="hidden space-y-4">
+              <div>
+                <label
+                  for="initial-height"
+                  class="block text-sm font-medium mb-1"
+                  >Initial Height [m]</label
+                >
+                <input
+                  type="number"
+                  id="initial-height"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  value="0"
+                  min="0"
+                  step="any"
+                />
+              </div>
+              <div>
+                <label for="launch-angle" class="block text-sm font-medium mb-1"
+                  >Launch Angle [°]</label
+                >
+                <input
+                  type="number"
+                  id="launch-angle"
+                  min="0"
+                  max="90"
+                  class="w-full p-2 border border-gray-300 rounded"
+                  step="any"
+                />
+              </div>
+            </div>
+
             <div>
               <label for="final-velocity" class="block text-sm font-medium mb-1"
                 >Final Velocity [m/s]</label
@@ -64,22 +96,18 @@
                 step="any"
               />
             </div>
-
-            <div>
-              <label
-                id="acceleration-label"
-                for="acceleration"
-                class="block text-sm font-medium mb-1"
-                >Acceleration [m/s²]</label
-              >
-              <input
-                type="number"
-                id="acceleration"
-                class="w-full p-2 border border-gray-300 rounded"
-                step="any"
-              />
-            </div>
-
+            <label
+              id="acceleration-label"
+              for="acceleration"
+              class="block text-sm font-medium mb-1"
+              >Acceleration [m/s²]</label
+            >
+            <input
+              type="number"
+              id="acceleration"
+              class="w-full p-2 border border-gray-300 rounded"
+              step="any"
+            />
             <div>
               <label for="time" class="block text-sm font-medium mb-1"
                 >Time [s]</label
@@ -105,38 +133,6 @@
               />
             </div>
 
-            <div id="projectile-inputs-container" class="hidden space-y-4">
-              <div>
-                <label
-                  for="initial-height"
-                  class="block text-sm font-medium mb-1"
-                  >Initial Height [m]</label
-                >
-                <input
-                  type="number"
-                  id="initial-height"
-                  class="w-full p-2 border border-gray-300 rounded"
-                  value="0"
-                  min="0"
-                  step="any"
-                />
-              </div>
-
-              <div>
-                <label for="launch-angle" class="block text-sm font-medium mb-1"
-                  >Launch Angle [°]</label
-                >
-                <input
-                  type="number"
-                  id="launch-angle"
-                  min="0"
-                  max="90"
-                  class="w-full p-2 border border-gray-300 rounded"
-                  step="any"
-                />
-              </div>
-            </div>
-
             <div class="flex gap-4 pt-2">
               <button
                 id="start-btn"
@@ -146,12 +142,23 @@
               </button>
               <button
                 id="calculate-btn"
-                class="bg-gray-400 text-white font-semibold py-2 px-4 rounded w-full"
-                disabled
+                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded w-full"
               >
                 Calculate
               </button>
             </div>
+            <div class="flex gap-4 pt-2">
+              <button
+                id="reset-btn"
+                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded w-full"
+              >
+                Reset
+              </button>
+            </div>
+            <div
+              id="error-message"
+              class="text-red-600 text-sm mt-2 hidden"
+            ></div>
           </div>
         </div>
 
@@ -166,53 +173,15 @@
           <div class="mt-6">
             <h2 class="text-lg font-semibold mb-4">Results</h2>
             <div
-              class="grid grid-cols-1 md:grid-cols-1 gap-6 bg-gray-50 p-4 rounded"
+              class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded"
               id="results-grid"
             >
-              <div class="border p-4 rounded shadow">
+              <div class="border p-4 rounded shadow" id="solution1-container">
                 <h3 class="font-bold text-center mb-2">Solution 1</h3>
-                <p id="output-v0-1-row">
-                  Initial Velocity:
-                  <span id="output-v0-1" class="text-blue-600 font-mono"
-                    >-</span
-                  >
-                  m/s
-                </p>
-
-                <p id="output-vf-1-row">
-                  Final Velocity:
-                  <span id="output-vf-1" class="text-blue-600 font-mono"
-                    >-</span
-                  >
-                  m/s
-                </p>
-                <p id="output-g-1-row" class="hidden">
+                <p>
                   Gravity:
-                  <span id="output-g-1" class="text-blue-600 font-mono">-</span>
+                  <span id="output-a-1" class="text-blue-600 font-mono">-</span>
                   m/s²
-                </p>
-                <p id="output-flight-time-1-row" class="hidden">
-                  Time:
-                  <span
-                    id="output-flight-time-1"
-                    class="text-blue-600 font-mono"
-                    >-</span
-                  >
-                  s
-                </p>
-                <p id="output-range-1-row" class="hidden">
-                  Horizontal Distance:
-                  <span id="output-range-1" class="text-blue-600 font-mono"
-                    >-</span
-                  >
-                  m
-                </p>
-                <p id="output-max-height-1-row" class="hidden">
-                  Max Height:
-                  <span id="output-max-height-1" class="text-blue-600 font-mono"
-                    >-</span
-                  >
-                  m
                 </p>
                 <p id="output-h-1-row" class="hidden">
                   Initial Height:
@@ -226,80 +195,74 @@
                   >
                   °
                 </p>
-
-                <p id="output-a-1-row">
-                  Acceleration:
-                  <span id="output-a-1" class="text-blue-600 font-mono">-</span>
-                  m/s²
+                <p>
+                  Initial Velocity:
+                  <span id="output-v0-1" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m/s
                 </p>
-                <p id="output-t-1-row">
+                <p>
+                  Final Velocity:
+                  <span id="output-vf-1" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m/s
+                </p>
+                <p>
                   Time:
                   <span id="output-t-1" class="text-blue-600 font-mono">-</span>
                   s
                 </p>
-                <p id="output-d-1-row">
-                  Displacement:
+                <p>
+                  Horizontal Distance:
                   <span id="output-d-1" class="text-blue-600 font-mono">-</span>
                   m
                 </p>
               </div>
-
-              <div
-                class="border p-4 rounded shadow hidden"
-                id="solution-2-container"
-              >
+              <div class="border p-4 rounded shadow" id="solution2-container">
                 <h3 class="font-bold text-center mb-2">Solution 2</h3>
-                <p id="output-v0-2-row">
+                <p>
+                  Gravity:
+                  <span id="output-a-2" class="text-blue-600 font-mono">-</span>
+                  m/s²
+                </p>
+                <!-- Added Initial Height and Launch Angle for Solution 2 to match Solution 1 -->
+                <p id="output-h-2-row" class="hidden">
+                  Initial Height:
+                  <span id="output-h-2" class="text-blue-600 font-mono">-</span>
+                  m
+                </p>
+                <p id="output-angle-2-row" class="hidden">
+                  Launch Angle:
+                  <span id="output-angle-2" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  °
+                </p>
+                <p>
                   Initial Velocity:
                   <span id="output-v0-2" class="text-blue-600 font-mono"
                     >-</span
                   >
                   m/s
                 </p>
-                <p id="output-vf-2-row">
+                <p>
                   Final Velocity:
                   <span id="output-vf-2" class="text-blue-600 font-mono"
                     >-</span
                   >
                   m/s
                 </p>
-                <p id="output-g-2-row">
-                  Gravity:
-                  <span id="output-g-2" class="text-blue-600 font-mono">-</span>
-                  m/s²
-                </p>
-                <p id="output-time-2-row">
+                <p>
                   Time:
-                  <span id="output-time-2" class="text-blue-600 font-mono"
-                    >-</span
-                  >
+                  <span id="output-t-2" class="text-blue-600 font-mono">-</span>
                   s
                 </p>
-                <p id="output-range-2-row">
+                <p>
                   Horizontal Distance:
-                  <span id="output-range-2" class="text-blue-600 font-mono"
-                    >-</span
-                  >
+                  <span id="output-d-2" class="text-blue-600 font-mono">-</span>
                   m
-                </p>
-                <p id="output-max-height-2-row">
-                  Max Height:
-                  <span id="output-max-height-2" class="text-blue-600 font-mono"
-                    >-</span
-                  >
-                  m
-                </p>
-                <p id="output-h-2-row">
-                  Initial Height:
-                  <span id="output-h-2" class="text-blue-600 font-mono">-</span>
-                  m
-                </p>
-                <p id="output-angle-2-row">
-                  Launch Angle:
-                  <span id="output-angle-2" class="text-blue-600 font-mono"
-                    >-</span
-                  >
-                  °
                 </p>
               </div>
             </div>
@@ -307,7 +270,7 @@
         </div>
       </div>
     </div>
-    <!-- Link to the external JavaScript file -->
+    <!-- Link your script.js file here -->
     <script src="script.js"></script>
   </body>
 </html>

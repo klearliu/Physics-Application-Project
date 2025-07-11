@@ -1,4 +1,4 @@
-/* Custom CSS for the toggle switch */
+/* Custom toggle switch styling */
 .toggle-switch {
   position: relative;
   display: inline-block;
@@ -39,7 +39,7 @@
 }
 
 input:checked + .slider {
-  background-color: #2196f3; /* Blue */
+  background-color: #2196f3;
 }
 
 input:focus + .slider {
