@@ -5,61 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Motion Simulator</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <style>
-      /* Custom CSS for the toggle switch */
-      .toggle-switch {
-        position: relative;
-        display: inline-block;
-        width: 60px;
-        height: 34px;
-      }
-
-      .toggle-switch input {
-        opacity: 0;
-        width: 0;
-        height: 0;
-      }
-
-      .slider {
-        position: absolute;
-        cursor: pointer;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: #ccc;
-        -webkit-transition: 0.4s;
-        transition: 0.4s;
-        border-radius: 34px;
-      }
-
-      .slider:before {
-        position: absolute;
-        content: "";
-        height: 26px;
-        width: 26px;
-        left: 4px;
-        bottom: 4px;
-        background-color: white;
-        -webkit-transition: 0.4s;
-        transition: 0.4s;
-        border-radius: 50%;
-      }
-
-      input:checked + .slider {
-        background-color: #2196f3; /* Blue */
-      }
-
-      input:focus + .slider {
-        box-shadow: 0 0 1px #2196f3;
-      }
-
-      input:checked + .slider:before {
-        -webkit-transform: translateX(26px);
-        -ms-transform: translateX(26px);
-        transform: translateX(26px);
-      }
-    </style>
+    <!-- Link to the external stylesheet -->
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body class="bg-gray-100 text-gray-800 min-h-screen p-6">
     <div class="max-w-6xl mx-auto bg-white shadow-md rounded-lg p-6">
@@ -69,6 +16,16 @@
         <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 lg:w-1/3">
           <h2 class="text-lg font-semibold mb-4">Controls</h2>
           <div class="space-y-4">
+            <div class="flex items-center mb-4">
+              <label for="projectile-mode" class="text-sm font-medium mr-3"
+                >Projectile Mode</label
+              >
+              <label class="toggle-switch">
+                <input type="checkbox" id="projectile-mode" />
+                <span class="slider"></span>
+              </label>
+            </div>
+
             <div>
               <label
                 for="initial-velocity"
@@ -81,7 +38,10 @@
                 class="w-full p-2 border border-gray-300 rounded"
                 step="any"
               />
-              <div class="flex items-center mt-2 space-x-2">
+              <div
+                id="constant-velocity-control-row"
+                class="flex items-center mt-2 space-x-2"
+              >
                 <input
                   type="checkbox"
                   id="constant-velocity"
@@ -106,7 +66,10 @@
             </div>
 
             <div>
-              <label for="acceleration" class="block text-sm font-medium mb-1"
+              <label
+                id="acceleration-label"
+                for="acceleration"
+                class="block text-sm font-medium mb-1"
                 >Acceleration [m/s²]</label
               >
               <input
@@ -140,16 +103,6 @@
                 class="w-full p-2 border border-gray-300 rounded"
                 step="any"
               />
-            </div>
-
-            <div class="flex items-center mb-4">
-              <label for="projectile-mode" class="text-sm font-medium mr-3"
-                >Projectile Mode</label
-              >
-              <label class="toggle-switch">
-                <input type="checkbox" id="projectile-mode" />
-                <span class="slider"></span>
-              </label>
             </div>
 
             <div id="projectile-inputs-container" class="hidden space-y-4">
@@ -192,12 +145,6 @@
                 Start
               </button>
               <button
-                id="reset-btn"
-                class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-2 px-4 rounded w-full"
-              >
-                Reset
-              </button>
-              <button
                 id="calculate-btn"
                 class="bg-gray-400 text-white font-semibold py-2 px-4 rounded w-full"
                 disabled
@@ -217,47 +164,35 @@
           ></canvas>
 
           <div class="mt-6">
-            <h2 class="text-lg font-semibold mb-4">Results (Two Solutions)</h2>
+            <h2 class="text-lg font-semibold mb-4">Results</h2>
             <div
-              class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded"
+              class="grid grid-cols-1 md:grid-cols-1 gap-6 bg-gray-50 p-4 rounded"
+              id="results-grid"
             >
               <div class="border p-4 rounded shadow">
                 <h3 class="font-bold text-center mb-2">Solution 1</h3>
-                <p>
+                <p id="output-v0-1-row">
                   Initial Velocity:
                   <span id="output-v0-1" class="text-blue-600 font-mono"
                     >-</span
                   >
                   m/s
                 </p>
-                <p>
-                  Initial Height:
-                  <span id="output-h-1" class="text-blue-600 font-mono">-</span>
-                  m
-                </p>
-                <p>
-                  Launch Angle:
-                  <span id="output-angle-1" class="text-blue-600 font-mono"
+
+                <p id="output-vf-1-row">
+                  Final Velocity:
+                  <span id="output-vf-1" class="text-blue-600 font-mono"
                     >-</span
                   >
-                  °
+                  m/s
                 </p>
-                <p>
-                  Range:
-                  <span id="output-range-1" class="text-blue-600 font-mono"
-                    >-</span
-                  >
-                  m
+                <p id="output-g-1-row" class="hidden">
+                  Gravity:
+                  <span id="output-g-1" class="text-blue-600 font-mono">-</span>
+                  m/s²
                 </p>
-                <p>
-                  Max Height:
-                  <span id="output-max-height-1" class="text-blue-600 font-mono"
-                    >-</span
-                  >
-                  m
-                </p>
-                <p>
-                  Flight Time:
+                <p id="output-flight-time-1-row" class="hidden">
+                  Time:
                   <span
                     id="output-flight-time-1"
                     class="text-blue-600 font-mono"
@@ -265,51 +200,106 @@
                   >
                   s
                 </p>
+                <p id="output-range-1-row" class="hidden">
+                  Horizontal Distance:
+                  <span id="output-range-1" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m
+                </p>
+                <p id="output-max-height-1-row" class="hidden">
+                  Max Height:
+                  <span id="output-max-height-1" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m
+                </p>
+                <p id="output-h-1-row" class="hidden">
+                  Initial Height:
+                  <span id="output-h-1" class="text-blue-600 font-mono">-</span>
+                  m
+                </p>
+                <p id="output-angle-1-row" class="hidden">
+                  Launch Angle:
+                  <span id="output-angle-1" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  °
+                </p>
+
+                <p id="output-a-1-row">
+                  Acceleration:
+                  <span id="output-a-1" class="text-blue-600 font-mono">-</span>
+                  m/s²
+                </p>
+                <p id="output-t-1-row">
+                  Time:
+                  <span id="output-t-1" class="text-blue-600 font-mono">-</span>
+                  s
+                </p>
+                <p id="output-d-1-row">
+                  Displacement:
+                  <span id="output-d-1" class="text-blue-600 font-mono">-</span>
+                  m
+                </p>
               </div>
 
-              <div class="border p-4 rounded shadow">
+              <div
+                class="border p-4 rounded shadow hidden"
+                id="solution-2-container"
+              >
                 <h3 class="font-bold text-center mb-2">Solution 2</h3>
-                <p>
+                <p id="output-v0-2-row">
                   Initial Velocity:
                   <span id="output-v0-2" class="text-blue-600 font-mono"
                     >-</span
                   >
                   m/s
                 </p>
-                <p>
-                  Initial Height:
-                  <span id="output-h-2" class="text-blue-600 font-mono">-</span>
-                  m
-                </p>
-                <p>
-                  Launch Angle:
-                  <span id="output-angle-2" class="text-blue-600 font-mono"
+                <p id="output-vf-2-row">
+                  Final Velocity:
+                  <span id="output-vf-2" class="text-blue-600 font-mono"
                     >-</span
                   >
-                  °
+                  m/s
                 </p>
-                <p>
-                  Range:
+                <p id="output-g-2-row">
+                  Gravity:
+                  <span id="output-g-2" class="text-blue-600 font-mono">-</span>
+                  m/s²
+                </p>
+                <p id="output-time-2-row">
+                  Time:
+                  <span id="output-time-2" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  s
+                </p>
+                <p id="output-range-2-row">
+                  Horizontal Distance:
                   <span id="output-range-2" class="text-blue-600 font-mono"
                     >-</span
                   >
                   m
                 </p>
-                <p>
+                <p id="output-max-height-2-row">
                   Max Height:
                   <span id="output-max-height-2" class="text-blue-600 font-mono"
                     >-</span
                   >
                   m
                 </p>
-                <p>
-                  Flight Time:
-                  <span
-                    id="output-flight-time-2"
-                    class="text-blue-600 font-mono"
+                <p id="output-h-2-row">
+                  Initial Height:
+                  <span id="output-h-2" class="text-blue-600 font-mono">-</span>
+                  m
+                </p>
+                <p id="output-angle-2-row">
+                  Launch Angle:
+                  <span id="output-angle-2" class="text-blue-600 font-mono"
                     >-</span
                   >
-                  s
+                  °
                 </p>
               </div>
             </div>
@@ -317,138 +307,7 @@
         </div>
       </div>
     </div>
-    <script>
-      document.addEventListener("DOMContentLoaded", function () {
-        const projectileModeCheckbox =
-          document.getElementById("projectile-mode");
-        const projectileInputsContainer = document.getElementById(
-          "projectile-inputs-container"
-        );
-        const constantVelocityCheckbox =
-          document.getElementById("constant-velocity");
-        const initialVelocityInput =
-          document.getElementById("initial-velocity");
-        const finalVelocityInput = document.getElementById("final-velocity");
-        const accelerationInput = document.getElementById("acceleration");
-        const calculateButton = document.getElementById("calculate-btn");
-
-        // Array of all relevant input IDs
-        const allInputs = [
-          "initial-velocity",
-          "final-velocity",
-          "acceleration",
-          "time",
-          "displacement",
-          "initial-height",
-          "launch-angle",
-        ];
-
-        // Function to update the calculate button state
-        function updateCalculateButtonState() {
-          let relevantInputs = [];
-
-          if (projectileModeCheckbox.checked) {
-            relevantInputs = [
-              "initial-velocity",
-              "initial-height",
-              "launch-angle",
-              "time",
-              "displacement",
-            ];
-          } else {
-            relevantInputs = [
-              "initial-velocity",
-              "final-velocity",
-              "acceleration",
-              "time",
-              "displacement",
-            ];
-          }
-
-          const filledInputs = relevantInputs.filter((id) => {
-            const inputElement = document.getElementById(id);
-            if (!inputElement) return false;
-
-            // If constant velocity is checked, acceleration and final velocity shouldn't count as separate user-provided inputs.
-            if (
-              constantVelocityCheckbox.checked &&
-              (id === "acceleration" || id === "final-velocity")
-            ) {
-              return false;
-            }
-
-            return inputElement.value !== "";
-          }).length;
-
-          const requiredInputs = projectileModeCheckbox.checked ? 3 : 3;
-
-          if (filledInputs >= requiredInputs) {
-            calculateButton.disabled = false;
-            calculateButton.classList.remove("bg-gray-400");
-            calculateButton.classList.add("bg-green-600", "hover:bg-green-700");
-          } else {
-            calculateButton.disabled = true;
-            calculateButton.classList.add("bg-gray-400");
-            calculateButton.classList.remove(
-              "bg-green-600",
-              "hover:bg-green-700"
-            );
-          }
-        }
-
-        // Event listener for Projectile Mode checkbox
-        projectileModeCheckbox.addEventListener("change", function () {
-          projectileInputsContainer.classList.toggle("hidden", !this.checked);
-          // Reset projectile inputs when switching modes
-          document.getElementById("initial-height").value = "0";
-          document.getElementById("launch-angle").value = "";
-          updateCalculateButtonState();
-        });
-
-        // Event listener for Constant Velocity checkbox
-        constantVelocityCheckbox.addEventListener("change", function () {
-          if (this.checked) {
-            // Disable acceleration and set to 0
-            accelerationInput.value = "0";
-            accelerationInput.disabled = true;
-            accelerationInput.classList.add("bg-gray-200");
-
-            // Copy initial velocity to final velocity and disable final velocity
-            finalVelocityInput.value = initialVelocityInput.value;
-            finalVelocityInput.disabled = true;
-            finalVelocityInput.classList.add("bg-gray-200");
-          } else {
-            // Enable acceleration and final velocity
-            accelerationInput.value = ""; // Clear acceleration
-            accelerationInput.disabled = false;
-            accelerationInput.classList.remove("bg-gray-200");
-
-            finalVelocityInput.value = ""; // Clear final velocity
-            finalVelocityInput.disabled = false;
-            finalVelocityInput.classList.remove("bg-gray-200");
-          }
-          updateCalculateButtonState();
-        });
-
-        // Add an event listener to initial velocity to update final velocity if constant velocity is checked
-        initialVelocityInput.addEventListener("input", function () {
-          if (constantVelocityCheckbox.checked) {
-            finalVelocityInput.value = this.value;
-          }
-          updateCalculateButtonState();
-        });
-
-        // Add event listeners to all relevant input fields to update button state
-        allInputs.forEach((id) => {
-          const inputElement = document.getElementById(id);
-          if (inputElement) {
-            inputElement.addEventListener("input", updateCalculateButtonState);
-          }
-        });
-
-        // Initial state update when the page loads
-        updateCalculateButtonState();
-      });
-    </script>
+    <!-- Link to the external JavaScript file -->
+    <script src="script.js"></script>
   </body>
 </html>

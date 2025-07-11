@@ -1,126 +1,53 @@
-/* General Styles */
-body {
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background-color: #dbdbdb;
-  margin: 0;
-  padding: 10px;
-}
-
-h1 {
-  text-align: center;
-  color: #2c3e50;
-  margin-bottom: 15px;
-}
-
-h2 {
-  color: #34495e;
-  margin-top: 15px;
-}
-
-/* Input Group Styles */
-.input-group {
-  margin: 10px auto;
-  background-color: #ffffff;
-  padding: 10px;
-  border-radius: 5px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  width: 25%;
-}
-
-label {
-  display: block;
-  margin-bottom: 4px;
-  color: #2c3e50;
-  font-size: 14px;
-}
-
-input[type="number"] {
-  width: calc(100% - 22px);
-  padding: 8px;
-  border: 1px solid #bdc3c7;
-  border-radius: 4px;
-  font-size: 14px;
-  transition: border-color 0.3s;
-}
-
-input[type="number"]:focus {
-  border-color: #3498db;
-  outline: none;
-}
-
-/* Checkbox Styles */
-input[type="checkbox"] {
-  margin-left: 10px;
-}
-
-/* Button Styles */
-button {
-  background-color: #3498db;
-  color: #ffffff;
-  border: none;
-  padding: 8px 12px;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-  transition: background-color 0.3s, transform 0.3s;
-  display: block;
-  margin: 15px auto;
-}
-
-button:hover {
-  background-color: #2980b9;
-  transform: scale(1.05);
-}
-
-/* Output Styles */
-.output {
-  background-color: #ffffff;
-  border: 1px solid #bdc3c7;
-  border-radius: 5px;
-  padding: 10px;
-  margin: 15px auto;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-  width: 25%;
-  text-align: center;
-}
-
-.output h1 {
-  margin: 0;
-  color: #34495e;
-  text-align: center;
-}
-
-.output p {
-  margin: 4px 0;
-  color: #2c3e50;
-  text-align: left;
-}
-
-/* Animation Styles */
-.animation {
+/* Custom CSS for the toggle switch */
+.toggle-switch {
   position: relative;
-  width: 25%;
-  height: 80px;
-  border: 1px solid #bdc3c7;
-  background-color: #f4f4f4;
-  margin: 15px auto;
-  border-radius: 5px;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
 }
 
-.moving-object {
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
   position: absolute;
-  width: 80px;
-  height: 80px;
-  background-color: green;
-  border-radius: 50%;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+  border-radius: 34px;
 }
 
-/* Media Queries for Responsive Design */
-@media (max-width: 600px) {
-  .input-group,
-  .output,
-  .animation {
-    width: 90%;
-  }
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  -webkit-transition: 0.4s;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: #2196f3; /* Blue */
+}
+
+input:focus + .slider {
+  box-shadow: 0 0 1px #2196f3;
+}
+
+input:checked + .slider:before {
+  -webkit-transform: translateX(26px);
+  -ms-transform: translateX(26px);
+  transform: translateX(26px);
 }
