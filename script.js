@@ -12,6 +12,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const initialHeightInput = document.getElementById("initial-height");
   const launchAngleInput = document.getElementById("launch-angle");
   const calculateButton = document.getElementById("calculate-btn");
+  const startButton = document.getElementById("start-btn"); // Get the start button
   const resetButton = document.getElementById("reset-btn");
   const errorMessageDiv = document.getElementById("error-message");
 
@@ -57,6 +58,49 @@ document.addEventListener("DOMContentLoaded", function () {
     launchAngleInput,
   ];
 
+  // Canvas elements
+  const canvas = document.getElementById("simulation-canvas");
+  const ctx = canvas.getContext("2d");
+  const scale = 10; // Pixels per meter
+  const objectRadius = 5; // Radius of the simulated object in pixels
+
+  let animationFrameId; // To store the ID of the animation frame for cancellation
+  let simulationStartTime; // To store the timestamp when simulation starts
+
+  /**
+   * Clears the canvas.
+   */
+  function clearCanvas() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  }
+
+  /**
+   * Draws the object on the canvas.
+   * @param {number} x - X position in meters.
+   * @param {number} y - Y position in meters.
+   */
+  function drawObject(x, y) {
+    clearCanvas(); // Clear previous drawing
+
+    // Convert meters to pixels and adjust for canvas coordinate system (y-axis inverted)
+    // For kinematic (horizontal) motion, y is constant, so we place it in the middle vertically.
+    // For projectile motion, y starts from bottom (canvas.height) and goes up.
+    const drawX = x * scale;
+    let drawY;
+
+    if (projectileModeCheckbox.checked) {
+      drawY = canvas.height - y * scale; // Invert y-axis for projectile motion
+    } else {
+      drawY = canvas.height / 2; // For kinematic, keep it in the middle of the canvas height
+    }
+
+    ctx.beginPath();
+    ctx.arc(drawX, drawY, objectRadius, 0, Math.PI * 2);
+    ctx.fillStyle = "#FF5733"; // Red color for the object
+    ctx.fill();
+    ctx.closePath();
+  }
+
   /**
    * Clears all output fields and hides projectile-specific rows.
    */
@@ -77,21 +121,102 @@ document.addEventListener("DOMContentLoaded", function () {
    */
   function updateCalculateButtonState() {
     let count = 0;
+    const isProjectile = projectileModeCheckbox.checked;
+
     allInputElements.forEach((input) => {
-      // Only count inputs that are visible and have a value
-      if (!input.closest(".hidden") && input.value !== "" && !input.disabled) {
-        count++;
+      // For general inputs, count if they have a value and are visible (not hidden by parent/container)
+      // projectile-inputs-container is hidden for kinematic, so its inputs won't be counted.
+      // In projectile mode, initial height, and launch angle are relevant.
+      if (input.value !== "" && !input.closest(".hidden")) {
+        // Special case: if acceleration or final velocity are disabled by constant velocity,
+        // they are still "known" but their direct input isn't user-provided.
+        // We handle these implicit knowns separately.
+        if (
+          !(
+            constantVelocityCheckbox.checked &&
+            (input.id === "acceleration" || input.id === "final-velocity")
+          )
+        ) {
+          count++;
+        }
       }
     });
 
-    // Enable calculate button if at least 3 relevant inputs are filled
-    calculateButton.disabled = count < 3;
-    calculateButton.classList.toggle("bg-blue-600", count >= 3);
-    calculateButton.classList.toggle("hover:bg-blue-700", count >= 3);
-    calculateButton.classList.toggle("bg-gray-400", count < 3);
+    // Add implicitly known values due to "Constant Velocity" in kinematic mode
+    if (!isProjectile && constantVelocityCheckbox.checked) {
+      // Acceleration is implicitly 0
+      count++;
+      // Final Velocity is implicitly initial velocity (if initial velocity is given)
+      if (initialVelocityInput.value !== "") {
+        count++;
+      }
+    }
 
-    if (count < 3) {
-      errorMessageDiv.textContent = "Enter at least three values to calculate.";
+    // Kinematic Calculation Button Logic
+    if (!isProjectile) {
+      calculateButton.disabled = count < 3;
+    } else {
+      // Projectile Calculation Button Logic
+      const v0_proj = parseFloat(initialVelocityInput.value);
+      const h0_proj = parseFloat(initialHeightInput.value);
+      const angleDeg_proj = parseFloat(launchAngleInput.value);
+      const g_magnitude_proj = parseFloat(accelerationInput.value); // Gravity
+
+      const canCalculateProjectile =
+        !isNaN(v0_proj) &&
+        !isNaN(h0_proj) &&
+        !isNaN(angleDeg_proj) &&
+        !isNaN(g_magnitude_proj) &&
+        v0_proj >= 0 &&
+        g_magnitude_proj > 0 &&
+        h0_proj >= 0 &&
+        angleDeg_proj >= 0 &&
+        angleDeg_proj <= 90;
+
+      calculateButton.disabled = !canCalculateProjectile;
+    }
+
+    // Start button logic (same as before but integrated)
+    let startButtonEnabled = false;
+    if (isProjectile) {
+      startButtonEnabled = !calculateButton.disabled; // For projectile, start = calculate
+    } else {
+      // Kinematic start logic
+      let v0 = parseFloat(initialVelocityInput.value);
+      let a = parseFloat(accelerationInput.value);
+      let t = parseFloat(timeInput.value);
+      let d = parseFloat(displacementInput.value);
+
+      if (!isNaN(v0)) {
+        if (constantVelocityCheckbox.checked) {
+          if (!isNaN(t) || !isNaN(d)) {
+            startButtonEnabled = true;
+          }
+        } else {
+          if (!isNaN(a) || !isNaN(t) || !isNaN(d)) {
+            startButtonEnabled = true;
+          }
+        }
+      }
+    }
+    startButton.disabled = !startButtonEnabled;
+
+    // Apply button styling
+    calculateButton.classList.toggle("bg-blue-600", !calculateButton.disabled);
+    calculateButton.classList.toggle(
+      "hover:bg-blue-700",
+      !calculateButton.disabled
+    );
+    calculateButton.classList.toggle("bg-gray-400", calculateButton.disabled);
+
+    startButton.classList.toggle("bg-blue-600", !startButton.disabled);
+    startButton.classList.toggle("hover:bg-blue-700", !startButton.disabled);
+    startButton.classList.toggle("bg-gray-400", startButton.disabled);
+
+    // Error message logic
+    if (calculateButton.disabled && startButton.disabled) {
+      errorMessageDiv.textContent =
+        "Enter at least three values to calculate, or sufficient values to start simulation.";
       errorMessageDiv.classList.remove("hidden");
     } else {
       errorMessageDiv.classList.add("hidden");
@@ -166,10 +291,16 @@ document.addEventListener("DOMContentLoaded", function () {
     let t = parseFloat(timeInput.value);
     let d = parseFloat(displacementInput.value);
 
+    // Corrected logic for 'a'
+    if (constantVelocityCheckbox.checked) {
+      a = 0; // If constant velocity, acceleration is 0
+    } else {
+      a = isNaN(a) ? null : a; // Otherwise, use parsed value or null if NaN
+    }
+
     // Use null for missing values to distinguish from 0
     v0 = isNaN(v0) ? null : v0;
     vf = isNaN(vf) ? null : vf;
-    a = isNaN(a) ? null : a;
     t = isNaN(t) ? null : t;
     d = isNaN(d) ? null : d;
 
@@ -465,6 +596,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const isProjectile = projectileModeCheckbox.checked;
 
     clearOutputFields(); // Always clear outputs when switching modes
+    clearCanvas(); // Clear canvas when switching modes
 
     // Toggle displacement label text
     displacementLabel.textContent = isProjectile
@@ -505,6 +637,80 @@ document.addEventListener("DOMContentLoaded", function () {
     updateProjectilePanelVisibility();
   }
 
+  /**
+   * Performs the kinematic simulation.
+   * @param {DOMHighResTimeStamp} currentTime - The current time provided by requestAnimationFrame.
+   */
+  function simulateKinematic(currentTime) {
+    if (!simulationStartTime) {
+      simulationStartTime = currentTime;
+    }
+    const elapsedTime = (currentTime - simulationStartTime) / 1000; // Convert ms to seconds
+
+    const v0 = parseFloat(initialVelocityInput.value);
+    const a = constantVelocityCheckbox.checked
+      ? 0
+      : parseFloat(accelerationInput.value || "0"); // Default acceleration to 0 if not provided or constant velocity
+    const maxTime = parseFloat(timeInput.value);
+    const maxDisplacement = parseFloat(displacementInput.value);
+
+    let currentDisplacement =
+      v0 * elapsedTime + 0.5 * a * elapsedTime * elapsedTime;
+
+    // Stop conditions
+    if (
+      (maxTime && elapsedTime >= maxTime) ||
+      (maxDisplacement &&
+        Math.abs(currentDisplacement) >= Math.abs(maxDisplacement)) // Stop if displacement limit is reached
+    ) {
+      cancelAnimationFrame(animationFrameId);
+      simulationStartTime = null; // Reset start time
+      return;
+    }
+
+    // Draw the object (assuming horizontal motion)
+    drawObject(currentDisplacement, 0); // Y-coordinate is irrelevant for 1D kinematic motion on canvas
+
+    animationFrameId = requestAnimationFrame(simulateKinematic);
+  }
+
+  /**
+   * Performs the projectile simulation.
+   * @param {DOMHighResTimeStamp} currentTime - The current time provided by requestAnimationFrame.
+   */
+  function simulateProjectile(currentTime) {
+    if (!simulationStartTime) {
+      simulationStartTime = currentTime;
+    }
+    const elapsedTime = (currentTime - simulationStartTime) / 1000; // Convert ms to seconds
+
+    const v0 = parseFloat(initialVelocityInput.value);
+    const g_magnitude = parseFloat(accelerationInput.value);
+    const h0 = parseFloat(initialHeightInput.value);
+    const angleDeg = parseFloat(launchAngleInput.value);
+
+    const g_effective = -g_magnitude; // Apply negative for downward acceleration
+    const angleRad = (angleDeg * Math.PI) / 180;
+    const v0x = v0 * Math.cos(angleRad);
+    const v0y = v0 * Math.sin(angleRad);
+
+    const currentX = v0x * elapsedTime;
+    const currentY =
+      h0 + v0y * elapsedTime + 0.5 * g_effective * elapsedTime * elapsedTime;
+
+    // Stop conditions: object hits the ground (y <= 0) or goes off screen horizontally
+    if (currentY <= 0 || currentX * scale > canvas.width) {
+      drawObject(currentX, 0); // Draw at ground level or edge of screen
+      cancelAnimationFrame(animationFrameId);
+      simulationStartTime = null; // Reset start time
+      return;
+    }
+
+    drawObject(currentX, currentY);
+
+    animationFrameId = requestAnimationFrame(simulateProjectile);
+  }
+
   // Event Listeners
   projectileModeCheckbox.addEventListener("change", updateUIForMode);
   constantVelocityCheckbox.addEventListener(
@@ -535,7 +741,74 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  startButton.addEventListener("click", function () {
+    // Stop any ongoing animation before starting a new one
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+    simulationStartTime = null; // Reset start time for new simulation
+
+    // Validate inputs before starting simulation
+    if (projectileModeCheckbox.checked) {
+      const v0 = parseFloat(initialVelocityInput.value);
+      const h0 = parseFloat(initialHeightInput.value);
+      const angleDeg = parseFloat(launchAngleInput.value);
+      const g_magnitude = parseFloat(accelerationInput.value);
+
+      if (
+        isNaN(v0) ||
+        isNaN(h0) ||
+        isNaN(angleDeg) ||
+        isNaN(g_magnitude) ||
+        v0 < 0 ||
+        h0 < 0 ||
+        angleDeg < 0 ||
+        angleDeg > 90 ||
+        g_magnitude <= 0
+      ) {
+        errorMessageDiv.textContent =
+          "Please enter valid positive numbers for Initial Velocity, Initial Height, Gravity, and a Launch Angle between 0-90 degrees to start the projectile simulation.";
+        errorMessageDiv.classList.remove("hidden");
+        clearCanvas();
+        return;
+      }
+      errorMessageDiv.classList.add("hidden");
+      animationFrameId = requestAnimationFrame(simulateProjectile);
+    } else {
+      const v0 = parseFloat(initialVelocityInput.value);
+      const a = constantVelocityCheckbox.checked
+        ? 0
+        : parseFloat(accelerationInput.value);
+      const t = parseFloat(timeInput.value);
+      const d = parseFloat(displacementInput.value);
+
+      if (
+        isNaN(v0) ||
+        (isNaN(a) &&
+          isNaN(t) &&
+          isNaN(d) &&
+          !constantVelocityCheckbox.checked) ||
+        (constantVelocityCheckbox.checked && isNaN(v0) && isNaN(t) && isNaN(d)) // For constant velocity, need v0 and (t or d)
+      ) {
+        errorMessageDiv.textContent =
+          "Please enter Initial Velocity and at least one of Acceleration, Time, or Displacement to start the kinematic simulation. For constant velocity, Initial Velocity and at least Time or Displacement are needed.";
+        errorMessageDiv.classList.remove("hidden");
+        clearCanvas();
+        return;
+      }
+      errorMessageDiv.classList.add("hidden");
+      animationFrameId = requestAnimationFrame(simulateKinematic);
+    }
+  });
+
   resetButton.addEventListener("click", function () {
+    // Stop any ongoing animation
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+    simulationStartTime = null; // Clear simulation start time
+    clearCanvas(); // Clear the canvas
+
     allInputElements.forEach((input) => {
       input.value = "";
       input.disabled = false;

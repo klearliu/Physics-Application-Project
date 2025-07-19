@@ -35,52 +35,8 @@
                 <input
                   type="number"
                   id="initial-velocity"
-                  class="w-full p-2 border border-gray-300 rounded"
-                  step="any"
-                />
-              </div>
-              <div
-                id="constant-velocity-control-row"
-                class="flex items-center mt-2 space-x-2"
-              >
-                <input
-                  type="checkbox"
-                  id="constant-velocity"
-                  class="accent-blue-600"
-                />
-                <label for="constant-velocity" class="text-sm"
-                  >Constant Velocity</label
-                >
-              </div>
-            </div>
-
-            <div id="projectile-inputs-container" class="hidden space-y-4">
-              <div>
-                <label
-                  for="initial-height"
-                  class="block text-sm font-medium mb-1"
-                  >Initial Height [m]</label
-                >
-                <input
-                  type="number"
-                  id="initial-height"
-                  class="w-full p-2 border border-gray-300 rounded"
-                  value="0"
-                  min="0"
-                  step="any"
-                />
-              </div>
-              <div>
-                <label for="launch-angle" class="block text-sm font-medium mb-1"
-                  >Launch Angle [°]</label
-                >
-                <input
-                  type="number"
-                  id="launch-angle"
-                  min="0"
-                  max="90"
-                  class="w-full p-2 border border-gray-300 rounded"
-                  step="any"
+                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., 10"
                 />
               </div>
             </div>
@@ -92,22 +48,38 @@
               <input
                 type="number"
                 id="final-velocity"
-                class="w-full p-2 border border-gray-300 rounded"
-                step="any"
+                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 20"
               />
             </div>
-            <label
-              id="acceleration-label"
-              for="acceleration"
-              class="block text-sm font-medium mb-1"
-              >Acceleration [m/s²]</label
-            >
-            <input
-              type="number"
-              id="acceleration"
-              class="w-full p-2 border border-gray-300 rounded"
-              step="any"
-            />
+
+            <div id="constant-velocity-control-row">
+              <div class="flex items-center">
+                <label for="constant-velocity" class="text-sm font-medium mr-3"
+                  >Constant Velocity</label
+                >
+                <label class="toggle-switch">
+                  <input type="checkbox" id="constant-velocity" />
+                  <span class="slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div>
+              <label
+                for="acceleration"
+                id="acceleration-label"
+                class="block text-sm font-medium mb-1"
+                >Acceleration [m/s²]</label
+              >
+              <input
+                type="number"
+                id="acceleration"
+                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 5"
+              />
+            </div>
+
             <div>
               <label for="time" class="block text-sm font-medium mb-1"
                 >Time [s]</label
@@ -115,9 +87,8 @@
               <input
                 type="number"
                 id="time"
-                min="0"
-                class="w-full p-2 border border-gray-300 rounded"
-                step="any"
+                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 2"
               />
             </div>
 
@@ -128,73 +99,92 @@
               <input
                 type="number"
                 id="displacement"
-                class="w-full p-2 border border-gray-300 rounded"
-                step="any"
+                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="e.g., 100"
               />
             </div>
 
-            <div class="flex gap-4 pt-2">
-              <button
-                id="start-btn"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded w-full"
-              >
-                Start
-              </button>
+            <div id="projectile-inputs-container" class="hidden">
+              <div>
+                <label
+                  for="initial-height"
+                  class="block text-sm font-medium mb-1"
+                  >Initial Height [m]</label
+                >
+                <input
+                  type="number"
+                  id="initial-height"
+                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., 0"
+                />
+              </div>
+              <div>
+                <label for="launch-angle" class="block text-sm font-medium mb-1"
+                  >Launch Angle [°]</label
+                >
+                <input
+                  type="number"
+                  id="launch-angle"
+                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., 45"
+                />
+              </div>
+            </div>
+
+            <div class="flex space-x-4 mt-6">
               <button
                 id="calculate-btn"
-                class="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded w-full"
+                class="flex-1 bg-gray-400 text-white p-3 rounded-md font-semibold transition duration-300"
+                disabled
               >
                 Calculate
               </button>
-            </div>
-            <div class="flex gap-4 pt-2">
+              <button
+                id="start-btn"
+                class="flex-1 bg-gray-400 text-white p-3 rounded-md font-semibold transition duration-300"
+                disabled
+              >
+                Start Simulation
+              </button>
               <button
                 id="reset-btn"
-                class="bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded w-full"
+                class="flex-1 bg-red-500 text-white p-3 rounded-md font-semibold hover:bg-red-600 transition duration-300"
               >
                 Reset
               </button>
             </div>
             <div
               id="error-message"
-              class="text-red-600 text-sm mt-2 hidden"
-            ></div>
+              class="text-red-600 text-sm mt-2 text-center hidden"
+            >
+              Please enter at least three values.
+            </div>
           </div>
         </div>
 
-        <div class="lg:w-2/3">
-          <canvas
-            id="simulation-canvas"
-            width="800"
-            height="500"
-            class="w-full rounded-lg border border-blue-500 bg-blue-50 shadow"
-          ></canvas>
+        <div class="lg:w-2/3 flex flex-col gap-8">
+          <div
+            class="bg-gray-50 rounded-lg p-6 border border-gray-200 flex-grow"
+          >
+            <h2 class="text-lg font-semibold mb-4">Simulation</h2>
+            <canvas
+              id="simulation-canvas"
+              width="600"
+              height="300"
+              class="bg-white border border-gray-300 rounded-md w-full"
+            ></canvas>
+          </div>
 
-          <div class="mt-6">
-            <h2 class="text-lg font-semibold mb-4">Results</h2>
+          <div
+            id="results-grid"
+            class="grid grid-cols-1 md:grid-cols-1 gap-8 flex-grow"
+          >
             <div
-              class="grid grid-cols-1 md:grid-cols-2 gap-6 bg-gray-50 p-4 rounded"
-              id="results-grid"
+              id="solution1-container"
+              class="bg-gray-50 rounded-lg p-6 border border-gray-200"
             >
-              <div class="border p-4 rounded shadow" id="solution1-container">
-                <h3 class="font-bold text-center mb-2">Solution 1</h3>
-                <p>
-                  Gravity:
-                  <span id="output-a-1" class="text-blue-600 font-mono">-</span>
-                  m/s²
-                </p>
-                <p id="output-h-1-row" class="hidden">
-                  Initial Height:
-                  <span id="output-h-1" class="text-blue-600 font-mono">-</span>
-                  m
-                </p>
-                <p id="output-angle-1-row" class="hidden">
-                  Launch Angle:
-                  <span id="output-angle-1" class="text-blue-600 font-mono"
-                    >-</span
-                  >
-                  °
-                </p>
+              <h3 class="text-md font-semibold mb-2">Solution 1</h3>
+              <div class="space-y-2">
                 <p>
                   Initial Velocity:
                   <span id="output-v0-1" class="text-blue-600 font-mono"
@@ -210,24 +200,46 @@
                   m/s
                 </p>
                 <p>
+                  Acceleration:
+                  <span id="output-a-1" class="text-blue-600 font-mono">-</span>
+                  m/s²
+                </p>
+                <p>
                   Time:
                   <span id="output-t-1" class="text-blue-600 font-mono">-</span>
                   s
                 </p>
                 <p>
-                  Horizontal Distance:
+                  Displacement:
                   <span id="output-d-1" class="text-blue-600 font-mono">-</span>
                   m
                 </p>
+                <p id="output-h-1-row" class="hidden">
+                  Initial Height:
+                  <span id="output-h-1" class="text-blue-600 font-mono">-</span>
+                  m
+                </p>
+                <p id="output-angle-1-row" class="hidden">
+                  Launch Angle:
+                  <span id="output-angle-1" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  °
+                </p>
               </div>
-              <div class="border p-4 rounded shadow" id="solution2-container">
-                <h3 class="font-bold text-center mb-2">Solution 2</h3>
+            </div>
+
+            <div
+              id="solution2-container"
+              class="bg-gray-50 rounded-lg p-6 border border-gray-200 hidden"
+            >
+              <h3 class="text-md font-semibold mb-2">Solution 2</h3>
+              <div class="space-y-2">
                 <p>
-                  Gravity:
+                  Acceleration:
                   <span id="output-a-2" class="text-blue-600 font-mono">-</span>
                   m/s²
                 </p>
-                <!-- Added Initial Height and Launch Angle for Solution 2 to match Solution 1 -->
                 <p id="output-h-2-row" class="hidden">
                   Initial Height:
                   <span id="output-h-2" class="text-blue-600 font-mono">-</span>
@@ -270,7 +282,6 @@
         </div>
       </div>
     </div>
-    <!-- Link your script.js file here -->
     <script src="script.js"></script>
   </body>
 </html>
