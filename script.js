@@ -165,7 +165,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const canCalculateProjectile =
         !isNaN(v0_proj) &&
         !isNaN(h0_proj) &&
-        !isNaN(angleDeg_proj) &&
+        !isNaN(angleDeg_proj) && // Launch angle must have a value
         !isNaN(g_magnitude_proj) &&
         v0_proj >= 0 &&
         g_magnitude_proj > 0 &&
@@ -415,7 +415,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /**
    * Displays the calculated projectile motion results in the solution panel(s).
-   * If launch angle is provided, only one solution is displayed. If blank, two solutions are shown (if available from calculation).
+   * Note: This function now always displays results in Solution 1 and hides Solution 2.
    * @param {number} v0 - Initial velocity.
    * @param {number} vf - Final velocity at impact.
    * @param {number} a - Gravity (effective, e.g., -9.81).
@@ -438,45 +438,20 @@ document.addEventListener("DOMContentLoaded", function () {
     solution1HRow.classList.remove("hidden");
     solution1AngleRow.classList.remove("hidden");
 
-    // Check if Solution 2 should be shown based on launchAngleInput state
-    // It will be shown if launchAngleInput is BLANK
-    const showTwoPanels =
-      projectileModeCheckbox.checked && launchAngleInput.value === "";
-
-    if (showTwoPanels) {
-      // For now, populate Solution 2 with the same results as Solution 1
-      // as the current calculation only produces one solution for given inputs.
-      // A more advanced solver would be needed to find two distinct angles/trajectories.
-      solution2A.textContent = a !== null && !isNaN(a) ? a.toFixed(2) : "-";
-      solution2H.textContent = h0 !== null && !isNaN(h0) ? h0.toFixed(2) : "-";
-      solution2Angle.textContent =
-        angle !== null && !isNaN(angle) ? angle.toFixed(2) : "-";
-      solution2V0.textContent = v0 !== null && !isNaN(v0) ? v0.toFixed(2) : "-";
-      solution2Vf.textContent = vf !== null && !isNaN(vf) ? vf.toFixed(2) : "-";
-      solution2T.textContent = t !== null && !isNaN(t) ? t.toFixed(2) : "-";
-      solution2D.textContent = d !== null && !isNaN(d) ? d.toFixed(2) : "-";
-
-      solution2HRow.classList.remove("hidden");
-      solution2AngleRow.classList.remove("hidden");
-      solution2Container.style.display = "block";
-    } else {
-      // Hide Solution 2 container and clear its outputs
-      solution2Container.style.display = "none";
-      solution2V0.textContent = "-";
-      solution2Vf.textContent = "-";
-      solution2A.textContent = "-";
-      solution2T.textContent = "-";
-      solution2D.textContent = "-";
-      solution2H.textContent = "-";
-      solution2Angle.textContent = "-";
-    }
+    // Always hide Solution 2 container and clear its outputs when in projectile mode
+    solution2Container.style.display = "none";
+    solution2V0.textContent = "-";
+    solution2Vf.textContent = "-";
+    solution2A.textContent = "-";
+    solution2T.textContent = "-";
+    solution2D.textContent = "-";
+    solution2H.textContent = "-";
+    solution2Angle.textContent = "-";
   }
 
   /**
    * Handles the calculation for projectile motion based on user inputs.
-   * Note: This function currently requires a value for launch angle. If it's blank,
-   * validation will prevent calculation and show an error. To find two solutions when
-   * the angle is blank would require a more complex "inverse" projectile solver.
+   * Note: This function currently requires a value for launch angle.
    */
   function handleProjectileCalculation() {
     const v0 = parseFloat(initialVelocityInput.value);
@@ -555,28 +530,21 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /**
    * Updates the visibility of solution panels and grid layout specifically for projectile mode.
+   * Now, it consistently hides Solution 2 and sets results grid to 1 column in projectile mode.
    */
   function updateProjectilePanelVisibility() {
     const isProjectile = projectileModeCheckbox.checked;
-    const isLaunchAngleGiven = launchAngleInput.value !== "";
 
     if (isProjectile) {
-      if (isLaunchAngleGiven) {
-        // User wants 1 panel if launch angle is given
-        solution2Container.style.display = "none";
-        resultsGrid.classList.add("md:grid-cols-1");
-        resultsGrid.classList.remove("md:grid-cols-2");
-      } else {
-        // User wants 2 panels if launch angle is blank
-        solution2Container.style.display = "block";
-        resultsGrid.classList.add("md:grid-cols-2");
-        resultsGrid.classList.remove("md:grid-cols-1");
-      }
-      // Ensure projectile specific rows are visible in solution 1 AND solution 2
+      // In projectile mode, always hide solution 2 and use single column layout
+      solution2Container.style.display = "none";
+      resultsGrid.classList.add("md:grid-cols-1");
+      resultsGrid.classList.remove("md:grid-cols-2");
+
+      // Ensure projectile specific rows are visible in solution 1
       solution1HRow.classList.remove("hidden");
       solution1AngleRow.classList.remove("hidden");
-      solution2HRow.classList.remove("hidden");
-      solution2AngleRow.classList.remove("hidden");
+      // Solution 2 rows are handled by clearOutputFields on mode switch and displayProjectileResults for consistency
     } else {
       // In kinematic mode, always hide solution 2 and projectile rows
       solution2Container.style.display = "none";
@@ -730,7 +698,7 @@ document.addEventListener("DOMContentLoaded", function () {
   initialHeightInput.addEventListener("input", updateCalculateButtonState);
   launchAngleInput.addEventListener("input", () => {
     updateCalculateButtonState();
-    updateProjectilePanelVisibility(); // Update panel visibility when angle input changes
+    // No need to call updateProjectilePanelVisibility here, it's now always one panel
   });
 
   calculateButton.addEventListener("click", function () {
