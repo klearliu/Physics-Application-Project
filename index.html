@@ -8,162 +8,167 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body class="bg-gray-100 text-gray-800 min-h-screen p-6">
-    <div class="max-w-6xl mx-auto bg-white shadow-md rounded-lg p-6">
+    <main class="max-w-6xl mx-auto bg-white shadow-md rounded-lg p-6">
       <h1 class="text-2xl font-bold mb-6 text-center">Motion Simulator</h1>
 
       <div class="flex flex-col lg:flex-row gap-8">
-        <div class="bg-gray-50 rounded-lg p-6 border border-gray-200 lg:w-1/3">
-          <h2 class="text-lg font-semibold mb-4">Controls</h2>
-          <div class="space-y-4">
-            <div class="flex items-center mb-4">
-              <label for="projectile-mode" class="text-sm font-medium mr-3"
-                >Projectile Mode</label
-              >
-              <label class="toggle-switch">
-                <input type="checkbox" id="projectile-mode" />
-                <span class="slider"></span>
-              </label>
-            </div>
-
-            <div>
-              <div>
-                <label
-                  for="initial-velocity"
-                  class="block text-sm font-medium mb-1"
-                  >Initial Velocity [m/s]</label
-                >
-                <input
-                  type="number"
-                  id="initial-velocity"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="ex. 10"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label for="final-velocity" class="block text-sm font-medium mb-1"
-                >Final Velocity [m/s]</label
-              >
-              <input
-                type="number"
-                id="final-velocity"
-                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="ex. 20"
-              />
-            </div>
-
-            <div id="constant-velocity-control-row">
-              <div class="flex items-center">
-                <label for="constant-velocity" class="text-sm font-medium mr-3"
-                  >Constant Velocity</label
+        <section
+          class="bg-gray-50 rounded-lg p-6 border border-gray-200 lg:w-1/3"
+        >
+          <fieldset>
+            <legend class="text-lg font-semibold mb-4">Controls</legend>
+            <div class="space-y-4">
+              <div class="flex items-center mb-4">
+                <label for="projectile-mode" class="text-sm font-medium mr-3"
+                  >Projectile Mode</label
                 >
                 <label class="toggle-switch">
-                  <input type="checkbox" id="constant-velocity" />
+                  <input type="checkbox" id="projectile-mode" />
                   <span class="slider"></span>
                 </label>
               </div>
-            </div>
 
-            <div>
-              <label
-                for="acceleration"
-                id="acceleration-label"
-                class="block text-sm font-medium mb-1"
-                >Acceleration [m/s²]</label
-              >
-              <input
-                type="number"
-                id="acceleration"
-                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="ex. 5"
-              />
-            </div>
+              <div>
+                <div>
+                  <label
+                    for="initial-velocity"
+                    class="block text-sm font-medium mb-1"
+                    >Initial Velocity [m/s]</label
+                  >
+                  <input
+                    type="number"
+                    id="initial-velocity"
+                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., 10"
+                  />
+                </div>
+              </div>
 
-            <div>
-              <label for="time" class="block text-sm font-medium mb-1"
-                >Time [s]</label
-              >
-              <input
-                type="number"
-                id="time"
-                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="ex. 2"
-              />
-            </div>
-
-            <div>
-              <label for="displacement" class="block text-sm font-medium mb-1"
-                >Displacement [m]</label
-              >
-              <input
-                type="number"
-                id="displacement"
-                class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                placeholder="ex. 100"
-              />
-            </div>
-
-            <div id="projectile-inputs-container" class="hidden">
               <div>
                 <label
-                  for="initial-height"
+                  for="final-velocity"
                   class="block text-sm font-medium mb-1"
-                  >Initial Height [m]</label
+                  >Final Velocity [m/s]</label
                 >
                 <input
                   type="number"
-                  id="initial-height"
+                  id="final-velocity"
                   class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="ex. 0"
+                  placeholder="e.g., 20"
                 />
               </div>
-              <div>
-                <label for="launch-angle" class="block text-sm font-medium mb-1"
-                  >Launch Angle [°]</label
-                >
-                <input
-                  type="number"
-                  id="launch-angle"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="ex. 45"
-                />
-              </div>
-            </div>
 
-            <div class="flex space-x-4 mt-6">
-              <button
-                id="calculate-btn"
-                class="flex-1 bg-gray-400 text-white p-3 rounded-md font-semibold transition duration-300"
-                disabled
+              <div id="constant-velocity-control-row">
+                <div class="flex items-center">
+                  <input type="checkbox" id="constant-velocity" class="mr-2" />
+                  <label for="constant-velocity" class="text-sm font-medium"
+                    >Constant Velocity</label
+                  >
+                </div>
+              </div>
+
+              <div>
+                <label
+                  for="acceleration"
+                  id="acceleration-label"
+                  class="block text-sm font-medium mb-1"
+                  >Acceleration [m/s²]</label
+                >
+                <input
+                  type="number"
+                  id="acceleration"
+                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., 5"
+                />
+              </div>
+
+              <div>
+                <label for="time" class="block text-sm font-medium mb-1"
+                  >Time [s]</label
+                >
+                <input
+                  type="number"
+                  id="time"
+                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., 2"
+                />
+              </div>
+
+              <div>
+                <label for="displacement" class="block text-sm font-medium mb-1"
+                  >Displacement [m]</label
+                >
+                <input
+                  type="number"
+                  id="displacement"
+                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="e.g., 100"
+                />
+              </div>
+
+              <div id="projectile-inputs-container" class="hidden">
+                <div>
+                  <label
+                    for="initial-height"
+                    class="block text-sm font-medium mb-1"
+                    >Initial Height [m]</label
+                  >
+                  <input
+                    type="number"
+                    id="initial-height"
+                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., 0"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="launch-angle"
+                    class="block text-sm font-medium mb-1"
+                    >Launch Angle [°]</label
+                  >
+                  <input
+                    type="number"
+                    id="launch-angle"
+                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="e.g., 45"
+                  />
+                </div>
+              </div>
+
+              <div class="flex space-x-4 mt-6">
+                <button
+                  id="calculate-btn"
+                  class="flex-1 bg-gray-400 text-white p-3 rounded-md font-semibold transition duration-300"
+                  disabled
+                >
+                  Calculate
+                </button>
+                <button
+                  id="start-btn"
+                  class="flex-1 bg-gray-400 text-white p-3 rounded-md font-semibold transition duration-300"
+                  disabled
+                >
+                  Start Simulation
+                </button>
+                <button
+                  id="reset-btn"
+                  class="flex-1 bg-red-500 text-white p-3 rounded-md font-semibold hover:bg-red-600 transition duration-300"
+                >
+                  Reset
+                </button>
+              </div>
+              <div
+                id="error-message"
+                class="text-red-600 text-sm mt-2 text-center hidden"
               >
-                Calculate
-              </button>
-              <button
-                id="start-btn"
-                class="flex-1 bg-gray-400 text-white p-3 rounded-md font-semibold transition duration-300"
-                disabled
-              >
-                Start Simulation
-              </button>
-              <button
-                id="reset-btn"
-                class="flex-1 bg-red-500 text-white p-3 rounded-md font-semibold hover:bg-red-600 transition duration-300"
-              >
-                Reset
-              </button>
+                Please enter at least three values.
+              </div>
             </div>
-            <div
-              id="error-message"
-              class="text-red-600 text-sm mt-2 text-center hidden"
-            >
-              Please enter at least three values.
-            </div>
-          </div>
-        </div>
+          </fieldset>
+        </section>
 
         <div class="lg:w-2/3 flex flex-col gap-8">
-          <div
+          <section
             class="bg-gray-50 rounded-lg p-6 border border-gray-200 flex-grow"
           >
             <h2 class="text-lg font-semibold mb-4">Simulation</h2>
@@ -173,9 +178,9 @@
               height="300"
               class="bg-white border border-gray-300 rounded-md w-full"
             ></canvas>
-          </div>
+          </section>
 
-          <div
+          <section
             id="results-grid"
             class="grid grid-cols-1 md:grid-cols-1 gap-8 flex-grow"
           >
@@ -183,7 +188,7 @@
               id="solution1-container"
               class="bg-gray-50 rounded-lg p-6 border border-gray-200"
             >
-              <h3 class="text-md font-semibold mb-2">Solution 1</h3>
+              <h3 class="text-md font-semibold mb-2">Solution</h3>
               <div class="space-y-2">
                 <p>
                   Initial Velocity:
@@ -278,10 +283,10 @@
                 </p>
               </div>
             </div>
-          </div>
+          </section>
         </div>
       </div>
-    </div>
+    </main>
     <script src="script.js"></script>
   </body>
 </html>

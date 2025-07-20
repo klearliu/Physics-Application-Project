@@ -61,11 +61,18 @@ document.addEventListener("DOMContentLoaded", function () {
   // Canvas elements
   const canvas = document.getElementById("simulation-canvas");
   const ctx = canvas.getContext("2d");
-  const scale = 10; // Pixels per meter
   const objectRadius = 5; // Radius of the simulated object in pixels
 
   let animationFrameId; // To store the ID of the animation frame for cancellation
   let simulationStartTime; // To store the timestamp when simulation starts
+
+  // Global variables for dynamic scaling and speed in projectile mode
+  let currentScale = 10; // Default scale, will be dynamic for projectile mode
+  let animationTimeScale = 1; // Default 1x speed, will be dynamic for projectile mode
+
+  // Global variables to store calculated projectile properties for consistent drawing
+  let finalRange = 0;
+  let finalTimeOfFlight = 0;
 
   /**
    * Clears the canvas.
@@ -75,21 +82,119 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   /**
+   * Draws the X and Y axes with dynamic labels for projectile mode.
+   */
+  function drawAxes() {
+    ctx.save(); // Save the current canvas state
+
+    ctx.strokeStyle = "#888"; // Axis color
+    ctx.lineWidth = 1;
+    ctx.font = "10px Arial";
+    ctx.fillStyle = "#333"; // Label color
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+
+    // Draw X-axis (bottom of the canvas)
+    ctx.beginPath();
+    ctx.moveTo(0, canvas.height);
+    ctx.lineTo(canvas.width, canvas.height);
+    ctx.stroke();
+
+    // Draw Y-axis (left edge of the canvas)
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(0, canvas.height);
+    ctx.stroke();
+
+    // Draw X-axis labels and tick marks
+    // Determine a reasonable step for X-axis ticks
+    let xStep = 10; // Default step for ranges up to ~50m displayed
+    if (finalRange > 500) xStep = 100;
+    else if (finalRange > 100) xStep = 50;
+    else if (finalRange > 50) xStep = 20;
+    else if (finalRange > 20) xStep = 10;
+    else if (finalRange > 5) xStep = 5;
+    else xStep = 1; // For very short ranges
+
+    for (
+      let xMeters = 0;
+      xMeters <= finalRange * 1.1 + xStep;
+      xMeters += xStep
+    ) {
+      // Draw slightly beyond the max range for padding
+      const drawX = xMeters * currentScale;
+      if (drawX > canvas.width) break; // Don't draw labels outside canvas
+
+      ctx.beginPath();
+      ctx.moveTo(drawX, canvas.height);
+      ctx.lineTo(drawX, canvas.height - 5); // Tick mark
+      ctx.stroke();
+      ctx.fillText(xMeters.toFixed(0), drawX, canvas.height - 8);
+    }
+    // X-axis label
+    ctx.fillText(
+      "Horizontal Distance (m)",
+      canvas.width / 2,
+      canvas.height - 25
+    );
+
+    // Draw Y-axis labels and tick marks
+    // Determine a reasonable step for Y-axis ticks
+    let yStep = 10; // Default step
+    let maxDisplayedHeight = canvas.height / currentScale; // Max height that can be displayed with current scale
+    if (maxDisplayedHeight > 500) yStep = 100;
+    else if (maxDisplayedHeight > 100) yStep = 50;
+    else if (maxDisplayedHeight > 50) yStep = 20;
+    else if (maxDisplayedHeight > 20) yStep = 10;
+    else if (maxDisplayedHeight > 5) yStep = 5;
+    else yStep = 1; // For very short heights
+
+    ctx.textAlign = "right";
+    ctx.textBaseline = "middle";
+    for (
+      let yMeters = 0;
+      yMeters <= maxDisplayedHeight * 1.1 + yStep;
+      yMeters += yStep
+    ) {
+      const drawY = canvas.height - yMeters * currentScale;
+      if (drawY < 0) break; // Don't draw labels outside canvas
+
+      ctx.beginPath();
+      ctx.moveTo(0, drawY);
+      ctx.lineTo(5, drawY); // Tick mark
+      ctx.stroke();
+      ctx.fillText(yMeters.toFixed(0), 8, drawY);
+    }
+    // Y-axis label
+    ctx.save(); // Save context before rotating
+    ctx.translate(25, canvas.height / 2);
+    ctx.rotate(-Math.PI / 2);
+    ctx.textAlign = "center";
+    ctx.fillText("Vertical Height (m)", 0, 0);
+    ctx.restore(); // Restore context after rotating
+
+    ctx.restore(); // Restore the original canvas state
+  }
+
+  /**
    * Draws the object on the canvas.
    * @param {number} x - X position in meters.
    * @param {number} y - Y position in meters.
    */
   function drawObject(x, y) {
     clearCanvas(); // Clear previous drawing
+    if (projectileModeCheckbox.checked) {
+      drawAxes(); // Draw axes only in projectile mode
+    }
 
     // Convert meters to pixels and adjust for canvas coordinate system (y-axis inverted)
     // For kinematic (horizontal) motion, y is constant, so we place it in the middle vertically.
     // For projectile motion, y starts from bottom (canvas.height) and goes up.
-    const drawX = x * scale;
+    const drawX = x * currentScale;
     let drawY;
 
     if (projectileModeCheckbox.checked) {
-      drawY = canvas.height - y * scale; // Invert y-axis for projectile motion
+      drawY = canvas.height - y * currentScale; // Invert y-axis for projectile motion
     } else {
       drawY = canvas.height / 2; // For kinematic, keep it in the middle of the canvas height
     }
@@ -451,7 +556,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   /**
    * Handles the calculation for projectile motion based on user inputs.
-   * Note: This function currently requires a value for launch angle.
+   * Note: This function now also calculates dynamic scale and animation speed.
    */
   function handleProjectileCalculation() {
     const v0 = parseFloat(initialVelocityInput.value);
@@ -512,10 +617,53 @@ document.addEventListener("DOMContentLoaded", function () {
     // Calculate range (horizontal distance)
     const range = v0x * t_flight;
 
+    // Store final range and time of flight for consistent endpoint drawing
+    finalRange = range;
+    finalTimeOfFlight = t_flight;
+
     // Calculate final vertical velocity component (vf_y) at impact
     const vf_y = v0y + g_effective * t_flight;
     // Calculate total final velocity magnitude
     const vf = Math.sqrt(vf_y * vf_y + v0x * v0x);
+
+    // --- Dynamic Scaling and Speed Calculation ---
+    // Calculate Maximum Height (y_max) reached from ground zero
+    let max_y_value;
+    if (v0y > 0) {
+      // Time to reach peak height from launch point (only if there's an upward velocity)
+      const time_to_peak_from_launch = v0y / g_magnitude;
+      // Peak height above the initial launch height
+      const peak_height_above_launch =
+        v0y * time_to_peak_from_launch -
+        0.5 * g_magnitude * time_to_peak_from_launch * time_to_peak_from_launch;
+      max_y_value = h0 + peak_height_above_launch;
+    } else {
+      // If no upward velocity (angle 0), max height is just the initial height
+      max_y_value = h0;
+    }
+
+    // Ensure max_y_value is at least a small positive number to avoid issues with very flat trajectories
+    max_y_value = Math.max(0.1, max_y_value);
+
+    // Determine dynamic currentScale to fit trajectory within canvas
+    const paddingFactor = 1.1; // Add 10% padding
+    const canvasWidth = canvas.width;
+    const canvasHeight = canvas.height;
+
+    const requiredScaleX = canvasWidth / (range * paddingFactor);
+    const requiredScaleY = canvasHeight / (max_y_value * paddingFactor);
+
+    currentScale = Math.min(requiredScaleX, requiredScaleY);
+    // Apply limits to currentScale to prevent it from becoming too small or too large visually
+    currentScale = Math.max(1, Math.min(100, currentScale)); // Min 1 pixel/meter, Max 100 pixels/meter
+
+    // Determine animation speed factor to make simulation last a reasonable time
+    const targetSimulationDuration = 4; // Aim for a 4-second simulation
+    animationTimeScale = t_flight > 0 ? targetSimulationDuration / t_flight : 1;
+    // Apply limits to animationTimeScale to prevent extremely fast or slow animations
+    animationTimeScale = Math.max(0.1, Math.min(10, animationTimeScale)); // Min 0.1x speed (10s animation), Max 10x speed (0.4s animation)
+
+    // --- End Dynamic Scaling and Speed Calculation ---
 
     displayProjectileResults(
       v0,
@@ -564,7 +712,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const isProjectile = projectileModeCheckbox.checked;
 
     clearOutputFields(); // Always clear outputs when switching modes
-    clearCanvas(); // Clear canvas when switching modes
+    clearCanvas(); // Clear canvas when switching modes (this will also remove axes)
 
     // Toggle displacement label text
     displacementLabel.textContent = isProjectile
@@ -649,15 +797,18 @@ document.addEventListener("DOMContentLoaded", function () {
   function simulateProjectile(currentTime) {
     if (!simulationStartTime) {
       simulationStartTime = currentTime;
+      // Call handleProjectileCalculation to set currentScale, animationTimeScale, finalRange, finalTimeOfFlight
+      handleProjectileCalculation();
     }
-    const elapsedTime = (currentTime - simulationStartTime) / 1000; // Convert ms to seconds
+    let elapsedTime = (currentTime - simulationStartTime) / 1000; // Convert ms to seconds
+    elapsedTime *= animationTimeScale; // Apply animation speed factor
 
     const v0 = parseFloat(initialVelocityInput.value);
     const g_magnitude = parseFloat(accelerationInput.value);
     const h0 = parseFloat(initialHeightInput.value);
     const angleDeg = parseFloat(launchAngleInput.value);
 
-    const g_effective = -g_magnitude; // Apply negative for downward acceleration
+    const g_effective = -g_magnitude;
     const angleRad = (angleDeg * Math.PI) / 180;
     const v0x = v0 * Math.cos(angleRad);
     const v0y = v0 * Math.sin(angleRad);
@@ -666,9 +817,9 @@ document.addEventListener("DOMContentLoaded", function () {
     const currentY =
       h0 + v0y * elapsedTime + 0.5 * g_effective * elapsedTime * elapsedTime;
 
-    // Stop conditions: object hits the ground (y <= 0) or goes off screen horizontally
-    if (currentY <= 0 || currentX * scale > canvas.width) {
-      drawObject(currentX, 0); // Draw at ground level or edge of screen
+    // Stop conditions: object reaches end of calculated flight time or goes slightly below ground
+    if (elapsedTime >= finalTimeOfFlight || currentY < -0.01) {
+      drawObject(finalRange, 0); // Always draw the object precisely at the calculated range on the ground
       cancelAnimationFrame(animationFrameId);
       simulationStartTime = null; // Reset start time
       return;
