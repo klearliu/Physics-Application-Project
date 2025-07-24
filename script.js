@@ -68,10 +68,17 @@ document.addEventListener("DOMContentLoaded", function () {
   let finalRange = 0;
   let finalTimeOfFlight = 0;
 
+  /**
+   * Clears the canvas, removing any drawn objects or axes.
+   */
   function clearCanvas() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 
+  /**
+   * Draws X and Y axes on the canvas for projectile motion visualization.
+   * Includes labels and tick marks based on the calculated range and height.
+   */
   function drawAxes() {
     ctx.save();
 
@@ -82,16 +89,19 @@ document.addEventListener("DOMContentLoaded", function () {
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
 
+    // Draw X-axis
     ctx.beginPath();
     ctx.moveTo(0, canvas.height);
     ctx.lineTo(canvas.width, canvas.height);
     ctx.stroke();
 
+    // Draw Y-axis
     ctx.beginPath();
     ctx.moveTo(0, 0);
     ctx.lineTo(0, canvas.height);
     ctx.stroke();
 
+    // X-axis labels and ticks
     let xStep = 10;
     if (finalRange > 500) xStep = 100;
     else if (finalRange > 100) xStep = 50;
@@ -120,6 +130,7 @@ document.addEventListener("DOMContentLoaded", function () {
       canvas.height - 25
     );
 
+    // Y-axis labels and ticks
     let yStep = 10;
     let maxDisplayedHeight = canvas.height / currentScale;
     if (maxDisplayedHeight > 500) yStep = 100;
@@ -155,6 +166,12 @@ document.addEventListener("DOMContentLoaded", function () {
     ctx.restore();
   }
 
+  /**
+   * Draws the simulated object (a circle) on the canvas at the given coordinates.
+   * Adjusts Y-coordinate for canvas drawing (origin at top-left).
+   * @param {number} x - The x-coordinate of the object in meters.
+   * @param {number} y - The y-coordinate of the object in meters.
+   */
   function drawObject(x, y) {
     clearCanvas();
     if (projectileModeCheckbox.checked) {
@@ -165,18 +182,21 @@ document.addEventListener("DOMContentLoaded", function () {
     let drawY;
 
     if (projectileModeCheckbox.checked) {
-      drawY = canvas.height - y * currentScale;
+      drawY = canvas.height - y * currentScale; // Invert Y for canvas coordinates
     } else {
-      drawY = canvas.height / 2;
+      drawY = canvas.height / 2; // Keep object in the middle for kinematic
     }
 
     ctx.beginPath();
     ctx.arc(drawX, drawY, objectRadius, 0, Math.PI * 2);
-    ctx.fillStyle = "#FF5733";
+    ctx.fillStyle = "#FF5733"; // Orange-red color
     ctx.fill();
     ctx.closePath();
   }
 
+  /**
+   * Clears all output fields in the solution panels and hides projectile-specific rows.
+   */
   function clearOutputFields() {
     const outputSpans = document.querySelectorAll(
       '#results-grid span[id^="output-"]'
@@ -189,15 +209,22 @@ document.addEventListener("DOMContentLoaded", function () {
     errorMessageDiv.classList.add("hidden");
   }
 
+  /**
+   * Updates the disabled state of the Calculate and Start Simulation buttons
+   * based on the number of valid inputs and the current mode (kinematic/projectile).
+   */
   function updateCalculateButtonState() {
     let count = 0;
     const isProjectile = projectileModeCheckbox.checked;
 
+    // Count valid inputs for kinematic mode
     allInputElements.forEach((input) => {
       if (input.value !== "" && !input.closest(".hidden")) {
+        // Exclude acceleration/final velocity if constant velocity is checked and not in projectile mode
         if (
           !(
             constantVelocityCheckbox.checked &&
+            !isProjectile &&
             (input.id === "acceleration" || input.id === "final-velocity")
           )
         ) {
@@ -206,22 +233,28 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
 
+    // Adjust count for constant velocity mode specifically
     if (!isProjectile && constantVelocityCheckbox.checked) {
-      count++;
+      // If constant velocity, acceleration and final velocity are derived,
+      // so we need initial velocity and one other (time or displacement)
       if (initialVelocityInput.value !== "") {
-        count++;
+        count++; // Initial velocity counts as a known
       }
+      // No need to increment for acceleration/final velocity as they are fixed
     }
 
+    let canCalculate = false;
     if (!isProjectile) {
-      calculateButton.disabled = count < 3;
+      // Kinematic mode: need at least 3 values to calculate all 5
+      canCalculate = count >= 3;
     } else {
+      // Projectile mode: need all 4 specific inputs (v0, h0, angle, gravity)
       const v0_proj = parseFloat(initialVelocityInput.value);
       const h0_proj = parseFloat(initialHeightInput.value);
       const angleDeg_proj = parseFloat(launchAngleInput.value);
-      const g_magnitude_proj = parseFloat(accelerationInput.value);
+      const g_magnitude_proj = parseFloat(accelerationInput.value); // Gravity input
 
-      const canCalculateProjectile =
+      canCalculate =
         !isNaN(v0_proj) &&
         !isNaN(h0_proj) &&
         !isNaN(angleDeg_proj) &&
@@ -231,21 +264,21 @@ document.addEventListener("DOMContentLoaded", function () {
         h0_proj >= 0 &&
         angleDeg_proj >= 0 &&
         angleDeg_proj <= 90;
-
-      calculateButton.disabled = !canCalculateProjectile;
     }
+    calculateButton.disabled = !canCalculate;
 
     let startButtonEnabled = false;
     if (isProjectile) {
-      startButtonEnabled = !calculateButton.disabled;
+      // Projectile simulation requires all 4 inputs to be valid
+      startButtonEnabled = canCalculate;
     } else {
+      // Kinematic simulation: need enough info to determine V0 and either A, T, or D
       let v0 = parseFloat(initialVelocityInput.value);
-      let vf = parseFloat(finalVelocityInput.value); // Added for simulation check
+      let vf = parseFloat(finalVelocityInput.value);
       let a = parseFloat(accelerationInput.value);
       let t = parseFloat(timeInput.value);
       let d = parseFloat(displacementInput.value);
 
-      // Convert to null if NaN for consistent checking
       v0 = isNaN(v0) ? null : v0;
       vf = isNaN(vf) ? null : vf;
       a = isNaN(a) ? null : a;
@@ -258,53 +291,16 @@ document.addEventListener("DOMContentLoaded", function () {
           startButtonEnabled = true;
         }
       } else {
-        // For general kinematic, need v0 AND (a OR t OR d)
-        // OR (vf AND a AND t) OR (v0 AND vf AND (a OR t OR d)) etc.
-        // Simplified: at least one known velocity (v0 or vf)
-        // and at least two other known variables (a, t, d) or derivable.
-
-        // This revised logic for startButtonEnabled in kinematic mode is more robust
-        // It should enable if enough values are present to fully solve, or if v0 + (a or t or d) are present.
-        const knownCount = [v0, vf, a, t, d].filter(
-          (val) => val !== null
-        ).length;
-
-        // At least 2 values given and if acceleration is missing, either time or displacement is needed to start.
-        // If v0 is known, then (a or t or d) are needed.
-        // If vf is known, then (v0 or a or t or d) are needed.
-        // Minimum for simulation is generally V0 and A/T/D, or VF and V0/A/T/D.
-        // Let's simplify: if we can calculate, we can simulate.
-        // The kinematic calculation function needs 3 values to derive all 5.
-        // For simulation, we primarily need:
-        // 1. V0 and A (or implicitly A=0 for constant velocity)
-        // 2. V0 and T
-        // 3. V0 and D (can derive A, T)
-        // 4. VF and A (can derive V0, T, D) -- but this would typically also imply a V0 or other start condition.
-
-        // A simple rule for starting simulation:
-        // If initial velocity is known AND (time is known OR displacement is known OR acceleration is known)
-        // This allows V0,VF,T to work, as from them A can be calculated.
-        if (v0 !== null) {
-          // We need a starting point
-          if (a !== null || t !== null || d !== null) {
-            startButtonEnabled = true;
-          } else if (vf !== null && t !== null) {
-            // v0, vf, t provided implies 'a' can be calculated
-            startButtonEnabled = true;
-          } else if (vf !== null && a !== null) {
-            // v0, vf, a provided implies 't' and 'd' can be calculated
-            startButtonEnabled = true;
-          }
-        } else if (vf !== null) {
-          // If final velocity is given but not initial, need at least 2 more
-          if (a !== null && t !== null) {
-            // vf, a, t implies v0 and d can be calculated
-            startButtonEnabled = true;
-          } else if (a !== null && d !== null) {
-            // vf, a, d implies v0 and t can be calculated
-            startButtonEnabled = true;
-          } else if (t !== null && d !== null) {
-            // vf, t, d implies v0 and a can be calculated
+        // For general kinematic, if V0 is known, need at least one other (A, T, or D)
+        if (v0 !== null && (a !== null || t !== null || d !== null)) {
+          startButtonEnabled = true;
+        }
+        // If V0 is not known, but VF is, need at least two more to derive V0
+        else if (vf !== null) {
+          const knownCountForVfStart = [vf, a, t, d].filter(
+            (val) => val !== null
+          ).length;
+          if (knownCountForVfStart >= 3) {
             startButtonEnabled = true;
           }
         }
@@ -312,6 +308,7 @@ document.addEventListener("DOMContentLoaded", function () {
     }
     startButton.disabled = !startButtonEnabled;
 
+    // Update button styling
     calculateButton.classList.toggle("bg-blue-600", !calculateButton.disabled);
     calculateButton.classList.toggle(
       "hover:bg-blue-700",
@@ -323,21 +320,26 @@ document.addEventListener("DOMContentLoaded", function () {
     startButton.classList.toggle("hover:bg-blue-700", !startButton.disabled);
     startButton.classList.toggle("bg-gray-400", startButton.disabled);
 
+    // Display error message if neither button is enabled
     if (calculateButton.disabled && startButton.disabled) {
       errorMessageDiv.textContent =
-        "Enter at least three values to calculate, or sufficient values to start simulation.";
+        "Enter sufficient values to calculate or start simulation.";
       errorMessageDiv.classList.remove("hidden");
     } else {
       errorMessageDiv.classList.add("hidden");
     }
   }
 
+  /**
+   * Applies the constant velocity state, disabling acceleration and final velocity
+   * inputs and setting acceleration to 0.
+   */
   function applyConstantVelocityState() {
     if (constantVelocityCheckbox.checked) {
       accelerationInput.value = "0";
       accelerationInput.disabled = true;
       accelerationInput.classList.add("bg-gray-200");
-      finalVelocityInput.value = initialVelocityInput.value;
+      finalVelocityInput.value = initialVelocityInput.value; // Final velocity equals initial
       finalVelocityInput.disabled = true;
       finalVelocityInput.classList.add("bg-gray-200");
     } else {
@@ -351,14 +353,29 @@ document.addEventListener("DOMContentLoaded", function () {
     updateCalculateButtonState();
   }
 
+  /**
+   * Solves a quadratic equation for its roots.
+   * @param {number} a - Coefficient of the squared term.
+   * @param {number} b - Coefficient of the linear term.
+   * @param {number} c - Constant term.
+   * @returns {number[]} An array containing the real roots.
+   */
   function quadraticRoots(a, b, c) {
     const discriminant = b * b - 4 * a * c;
-    if (discriminant < 0) return [];
-    if (discriminant === 0) return [-b / (2 * a)];
+    if (discriminant < 0) return []; // No real roots
+    if (discriminant === 0) return [-b / (2 * a)]; // One real root
     const sqrtDisc = Math.sqrt(discriminant);
-    return [(-b + sqrtDisc) / (2 * a), (-b - sqrtDisc) / (2 * a)];
+    return [(-b + sqrtDisc) / (2 * a), (-b - sqrtDisc) / (2 * a)]; // Two real roots
   }
 
+  /**
+   * Displays the calculated kinematic results in the solution panel.
+   * @param {number} v0 - Initial velocity.
+   * @param {number} vf - Final velocity.
+   * @param {number} a - Acceleration.
+   * @param {number} t - Time.
+   * @param {number} d - Displacement.
+   */
   function displayKinematicResults(v0, vf, a, t, d) {
     solution1V0.textContent = v0 !== null && !isNaN(v0) ? v0.toFixed(2) : "-";
     solution1Vf.textContent = vf !== null && !isNaN(vf) ? vf.toFixed(2) : "-";
@@ -366,11 +383,16 @@ document.addEventListener("DOMContentLoaded", function () {
     solution1T.textContent = t !== null && !isNaN(t) ? t.toFixed(2) : "-";
     solution1D.textContent = d !== null && !isNaN(d) ? d.toFixed(2) : "-";
 
+    // Hide projectile-specific rows for kinematic mode
     solution1HRow.classList.add("hidden");
     solution1AngleRow.classList.add("hidden");
-    solution2Container.style.display = "none";
+    solution2Container.style.display = "none"; // Ensure second solution panel is hidden
   }
 
+  /**
+   * Handles the calculation of unknown kinematic variables based on user inputs.
+   * It iteratively applies kinematic equations until all solvable variables are found.
+   */
   function handleKinematicCalculation() {
     let v0 = parseFloat(initialVelocityInput.value);
     let vf = parseFloat(finalVelocityInput.value);
@@ -378,19 +400,21 @@ document.addEventListener("DOMContentLoaded", function () {
     let t = parseFloat(timeInput.value);
     let d = parseFloat(displacementInput.value);
 
+    // If constant velocity is checked, force acceleration to 0
     if (constantVelocityCheckbox.checked) {
       a = 0;
     } else {
       a = isNaN(a) ? null : a;
     }
 
+    // Convert NaN inputs to null for consistent checking
     v0 = isNaN(v0) ? null : v0;
     vf = isNaN(vf) ? null : vf;
     t = isNaN(t) ? null : t;
     d = isNaN(d) ? null : d;
 
     let solvedCount = 0;
-    let maxIterations = 10;
+    const maxIterations = 10; // Prevent infinite loops in case of unsolvable inputs
 
     for (let i = 0; i < maxIterations; i++) {
       let initialSolvedCount = [v0, vf, a, t, d].filter(
@@ -428,6 +452,7 @@ document.addEventListener("DOMContentLoaded", function () {
         a = (2 * (d - v0 * t)) / (t * t);
       else if (d !== null && v0 !== null && a !== null && t === null) {
         const roots = quadraticRoots(0.5 * a, v0, -d);
+        // Take the positive root for time
         if (roots.length === 1 && roots[0] >= 0) t = roots[0];
         else if (roots.length === 2) {
           const positiveRoots = roots.filter((root) => root >= 0);
@@ -438,10 +463,10 @@ document.addEventListener("DOMContentLoaded", function () {
       // Equation 3: vf^2 = v0^2 + 2*a*d
       if (v0 !== null && a !== null && d !== null && vf === null) {
         const vf_squared = v0 * v0 + 2 * a * d;
-        if (vf_squared >= 0) vf = Math.sqrt(vf_squared);
+        if (vf_squared >= 0) vf = Math.sqrt(vf_squared); // Take positive square root for speed
       } else if (vf !== null && a !== null && d !== null && v0 === null) {
         const v0_squared = vf * vf - 2 * a * d;
-        if (v0_squared >= 0) v0 = Math.sqrt(v0_squared);
+        if (v0_squared >= 0) v0 = Math.sqrt(v0_squared); // Take positive square root for speed
       } else if (
         vf !== null &&
         v0 !== null &&
@@ -479,12 +504,14 @@ document.addEventListener("DOMContentLoaded", function () {
         (val) => val !== null
       ).length;
 
+      // If no new variables were solved in this iteration, break the loop
       if (currentSolvedCount === initialSolvedCount) {
         break;
       }
       solvedCount = currentSolvedCount;
     }
 
+    // Display error if not all 5 variables could be solved
     if (solvedCount < 5) {
       errorMessageDiv.textContent =
         "Could not solve for all unknowns with the given inputs. Check your values.";
@@ -496,6 +523,16 @@ document.addEventListener("DOMContentLoaded", function () {
     displayKinematicResults(v0, vf, a, t, d);
   }
 
+  /**
+   * Displays the calculated projectile motion results in the solution panel.
+   * @param {number} v0 - Initial velocity.
+   * @param {number} vf - Final velocity.
+   * @param {number} a - Effective acceleration (gravity).
+   * @param {number} t - Time of flight.
+   * @param {number} d - Horizontal range.
+   * @param {number} h0 - Initial height.
+   * @param {number} angle - Launch angle in degrees.
+   */
   function displayProjectileResults(v0, vf, a, t, d, h0, angle) {
     solution1A.textContent = a !== null && !isNaN(a) ? a.toFixed(2) : "-";
     solution1H.textContent = h0 !== null && !isNaN(h0) ? h0.toFixed(2) : "-";
@@ -506,10 +543,12 @@ document.addEventListener("DOMContentLoaded", function () {
     solution1T.textContent = t !== null && !isNaN(t) ? t.toFixed(2) : "-";
     solution1D.textContent = d !== null && !isNaN(d) ? d.toFixed(2) : "-";
 
+    // Show projectile-specific rows
     solution1HRow.classList.remove("hidden");
     solution1AngleRow.classList.remove("hidden");
 
-    solution2Container.style.display = "none";
+    solution2Container.style.display = "none"; // Ensure second solution panel is hidden
+    // Clear second solution panel outputs just in case
     solution2V0.textContent = "-";
     solution2Vf.textContent = "-";
     solution2A.textContent = "-";
@@ -519,12 +558,16 @@ document.addEventListener("DOMContentLoaded", function () {
     solution2Angle.textContent = "-";
   }
 
+  /**
+   * Handles the calculation of projectile motion parameters based on user inputs.
+   */
   function handleProjectileCalculation() {
     const v0 = parseFloat(initialVelocityInput.value);
-    const g_magnitude = parseFloat(accelerationInput.value);
+    const g_magnitude = parseFloat(accelerationInput.value); // Gravity
     const h0 = parseFloat(initialHeightInput.value);
     const angleDeg = parseFloat(launchAngleInput.value);
 
+    // Input validation for projectile mode
     if (
       isNaN(v0) ||
       isNaN(g_magnitude) ||
@@ -545,16 +588,18 @@ document.addEventListener("DOMContentLoaded", function () {
       errorMessageDiv.classList.add("hidden");
     }
 
-    const g_effective = -g_magnitude;
+    const g_effective = -g_magnitude; // Gravity acts downwards
 
     const angleRad = (angleDeg * Math.PI) / 180;
 
     const v0x = v0 * Math.cos(angleRad);
     const v0y = v0 * Math.sin(angleRad);
 
+    // Calculate time of flight using quadratic formula for vertical motion
+    // d = v0y*t + 0.5*g*t^2 => 0.5*g*t^2 + v0y*t - h0 = 0
     const roots = quadraticRoots(0.5 * g_effective, v0y, h0);
 
-    const flightTimes = roots.filter((time) => time > 0);
+    const flightTimes = roots.filter((time) => time > 0); // Only positive time is valid
 
     if (flightTimes.length === 0) {
       errorMessageDiv.textContent =
@@ -564,16 +609,17 @@ document.addEventListener("DOMContentLoaded", function () {
       return;
     }
 
-    const t_flight = flightTimes[0];
+    const t_flight = flightTimes[0]; // Take the first valid positive time
 
-    const range = v0x * t_flight;
+    const range = v0x * t_flight; // Horizontal distance
 
     finalRange = range;
     finalTimeOfFlight = t_flight;
 
-    const vf_y = v0y + g_effective * t_flight;
-    const vf = Math.sqrt(vf_y * vf_y + v0x * v0x);
+    const vf_y = v0y + g_effective * t_flight; // Final vertical velocity
+    const vf = Math.sqrt(vf_y * vf_y + v0x * v0x); // Final total velocity
 
+    // Calculate maximum height for scaling the canvas
     let max_y_value;
     if (v0y > 0) {
       const time_to_peak_from_launch = v0y / g_magnitude;
@@ -582,24 +628,26 @@ document.addEventListener("DOMContentLoaded", function () {
         0.5 * g_magnitude * time_to_peak_from_launch * time_to_peak_from_launch;
       max_y_value = h0 + peak_height_above_launch;
     } else {
-      max_y_value = h0;
+      max_y_value = h0; // If initial vertical velocity is zero or negative, max height is initial height
     }
 
-    max_y_value = Math.max(0.1, max_y_value);
+    max_y_value = Math.max(0.1, max_y_value); // Ensure a minimum height for scaling
 
-    const paddingFactor = 1.1;
+    const paddingFactor = 1.1; // Add some padding to the view
     const canvasWidth = canvas.width;
     const canvasHeight = canvas.height;
 
+    // Determine scale based on required width and height
     const requiredScaleX = canvasWidth / (range * paddingFactor);
     const requiredScaleY = canvasHeight / (max_y_value * paddingFactor);
 
-    currentScale = Math.min(requiredScaleX, requiredScaleY);
-    currentScale = Math.max(1, Math.min(100, currentScale));
+    currentScale = Math.min(requiredScaleX, requiredScaleY); // Use the smaller scale to fit both dimensions
+    currentScale = Math.max(1, Math.min(100, currentScale)); // Clamp scale to reasonable values
 
-    const targetSimulationDuration = 4;
+    // Adjust animation speed based on total flight time
+    const targetSimulationDuration = 4; // seconds
     animationTimeScale = t_flight > 0 ? targetSimulationDuration / t_flight : 1;
-    animationTimeScale = Math.max(0.1, Math.min(10, animationTimeScale));
+    animationTimeScale = Math.max(0.1, Math.min(10, animationTimeScale)); // Clamp animation speed
 
     displayProjectileResults(
       v0,
@@ -612,108 +660,139 @@ document.addEventListener("DOMContentLoaded", function () {
     );
   }
 
+  /**
+   * Updates the visibility of projectile-specific panels and output rows.
+   * This ensures the correct layout for kinematic vs. projectile results.
+   */
   function updateProjectilePanelVisibility() {
     const isProjectile = projectileModeCheckbox.checked;
 
     if (isProjectile) {
-      solution2Container.style.display = "none";
-      resultsGrid.classList.add("md:grid-cols-1");
+      solution2Container.style.display = "none"; // Hide second solution panel
+      resultsGrid.classList.add("md:grid-cols-1"); // Ensure single column layout
       resultsGrid.classList.remove("md:grid-cols-2");
 
-      solution1HRow.classList.remove("hidden");
+      solution1HRow.classList.remove("hidden"); // Show projectile-specific output rows
       solution1AngleRow.classList.remove("hidden");
     } else {
-      solution2Container.style.display = "none";
-      resultsGrid.classList.remove("md:grid-cols-2");
+      solution2Container.style.display = "none"; // Hide second solution panel
+      resultsGrid.classList.remove("md:grid-cols-2"); // Ensure single column layout
       resultsGrid.classList.add("md:grid-cols-1");
-      solution1HRow.classList.add("hidden");
+      solution1HRow.classList.add("hidden"); // Hide projectile-specific output rows
       solution1AngleRow.classList.add("hidden");
       solution2HRow.classList.add("hidden");
       solution2AngleRow.classList.add("hidden");
     }
   }
 
+  /**
+   * Updates the UI elements based on whether projectile mode is active or not.
+   * This includes clearing inputs, setting defaults, and managing required attributes.
+   */
   function updateUIForMode() {
     const isProjectile = projectileModeCheckbox.checked;
 
-    clearOutputFields();
-    clearCanvas();
+    clearOutputFields(); // Clears output spans and hides projectile-specific rows
 
+    // Clear ALL input fields first
+    allInputElements.forEach((input) => {
+      input.value = "";
+      input.disabled = false; // Ensure they are re-enabled before specific disabling
+      input.classList.remove("bg-gray-200");
+    });
+    constantVelocityCheckbox.checked = false; // Always uncheck constant velocity when mode changes
+
+    // Update label for displacement input
     displacementLabel.textContent = isProjectile
       ? "Horizontal Distance [m]"
       : "Displacement [m]";
 
+    // Toggle visibility of projectile-specific input container
     projectileInputsContainer.classList.toggle("hidden", !isProjectile);
 
+    // Toggle visibility of constant velocity control row
     constantVelocityControlRow.classList.toggle("hidden", isProjectile);
 
+    // Update label for acceleration input
     accelerationLabel.textContent = isProjectile
       ? "Gravity [m/s²]"
       : "Acceleration [m/s²]";
 
     if (isProjectile) {
-      accelerationInput.value = "9.81";
-      accelerationInput.disabled = false;
-      accelerationInput.classList.remove("bg-gray-200");
-      constantVelocityCheckbox.checked = false;
-      finalVelocityInput.disabled = false;
-      finalVelocityInput.classList.remove("bg-gray-200");
+      accelerationInput.value = "9.81"; // Set gravity default for projectile mode
+      // Set required attributes for projectile mode inputs
+      accelerationInput.setAttribute("required", "true");
+      initialHeightInput.setAttribute("required", "true");
+      launchAngleInput.setAttribute("required", "true");
     } else {
-      accelerationInput.value = "";
-      accelerationInput.disabled = false;
-      accelerationInput.classList.remove("bg-gray-200");
+      // Remove required attributes when not in projectile mode
+      accelerationInput.removeAttribute("required");
+      initialHeightInput.removeAttribute("required");
+      launchAngleInput.removeAttribute("required");
+      // Apply constant velocity state if it was checked (though it's unchecked above, this ensures correct state)
       applyConstantVelocityState();
     }
 
-    updateCalculateButtonState();
-    updateProjectilePanelVisibility();
+    updateCalculateButtonState(); // Re-evaluate button states
+    updateProjectilePanelVisibility(); // Adjust panel visibility
   }
 
+  /**
+   * Simulates kinematic motion, updating the object's position on the canvas over time.
+   * @param {DOMHighResTimeStamp} currentTime - The current time provided by requestAnimationFrame.
+   */
   function simulateKinematic(currentTime) {
     if (!simulationStartTime) {
       simulationStartTime = currentTime;
-      // Re-calculate all kinematic variables here before simulation starts
-      // This ensures we have 'a' and 'd' if they were missing but derivable.
+      // Ensure all kinematic values are calculated before starting simulation
       handleKinematicCalculation();
     }
-    const elapsedTime = (currentTime - simulationStartTime) / 1000;
+    const elapsedTime = (currentTime - simulationStartTime) / 1000; // Time in seconds
 
-    // Use the *calculated* values for simulation, not just raw input values
+    // Use the *calculated* values for simulation
     const v0 = parseFloat(solution1V0.textContent);
     const a = parseFloat(solution1A.textContent);
-    const t_solved = parseFloat(solution1T.textContent); // Solved time
-    const d_solved = parseFloat(solution1D.textContent); // Solved displacement
+    const t_solved = parseFloat(solution1T.textContent); // Solved total time
+    const d_solved = parseFloat(solution1D.textContent); // Solved total displacement
 
+    // Calculate current displacement
     let currentDisplacement =
       v0 * elapsedTime + 0.5 * a * elapsedTime * elapsedTime;
 
     // Stop conditions:
-    // 1. If a total time (t_solved) was calculated, stop at that time.
-    // 2. If a total displacement (d_solved) was calculated, stop when displacement reaches it.
-    // Use Math.abs for displacement to handle negative displacement scenarios
+    // 1. If a total time (t_solved) was calculated, stop when elapsed time reaches it.
+    // 2. If a total displacement (d_solved) was calculated, stop when current displacement reaches it.
+    // Use a small tolerance for floating point comparisons
+    const tolerance = 0.01;
     if (
-      (t_solved && elapsedTime >= t_solved) ||
-      (d_solved && Math.abs(currentDisplacement) >= Math.abs(d_solved))
+      (t_solved && elapsedTime >= t_solved - tolerance) ||
+      (d_solved &&
+        Math.abs(currentDisplacement) >= Math.abs(d_solved) - tolerance &&
+        Math.sign(currentDisplacement) === Math.sign(d_solved))
     ) {
-      // Ensure the object ends at the calculated final displacement
+      // Ensure the object ends exactly at the calculated final displacement
       drawObject(d_solved, 0);
       cancelAnimationFrame(animationFrameId);
-      simulationStartTime = null;
+      simulationStartTime = null; // Reset simulation start time
       return;
     }
 
-    drawObject(currentDisplacement, 0);
+    drawObject(currentDisplacement, 0); // Draw object at current position
 
-    animationFrameId = requestAnimationFrame(simulateKinematic);
+    animationFrameId = requestAnimationFrame(simulateKinematic); // Continue animation
   }
 
+  /**
+   * Simulates projectile motion, updating the object's position on the canvas over time.
+   * @param {DOMHighResTimeStamp} currentTime - The current time provided by requestAnimationFrame.
+   */
   function simulateProjectile(currentTime) {
     if (!simulationStartTime) {
       simulationStartTime = currentTime;
-      handleProjectileCalculation();
+      handleProjectileCalculation(); // Ensure projectile values are calculated before starting
     }
     let elapsedTime = (currentTime - simulationStartTime) / 1000;
-    elapsedTime *= animationTimeScale;
+    elapsedTime *= animationTimeScale; // Adjust animation speed
 
     const v0 = parseFloat(initialVelocityInput.value);
     const g_magnitude = parseFloat(accelerationInput.value);
@@ -729,26 +808,33 @@ document.addEventListener("DOMContentLoaded", function () {
     const currentY =
       h0 + v0y * elapsedTime + 0.5 * g_effective * elapsedTime * elapsedTime;
 
-    if (elapsedTime >= finalTimeOfFlight || currentY < -0.01) {
-      drawObject(finalRange, 0);
+    // Stop conditions:
+    // 1. If elapsed time exceeds total flight time.
+    // 2. If object goes significantly below ground level (y < 0).
+    const tolerance = 0.01;
+    if (elapsedTime >= finalTimeOfFlight - tolerance || currentY < -tolerance) {
+      drawObject(finalRange, 0); // Ensure object lands at the calculated range
       cancelAnimationFrame(animationFrameId);
-      simulationStartTime = null;
+      simulationStartTime = null; // Reset simulation start time
       return;
     }
 
-    drawObject(currentX, currentY);
+    drawObject(currentX, currentY); // Draw object at current position
 
-    animationFrameId = requestAnimationFrame(simulateProjectile);
+    animationFrameId = requestAnimationFrame(simulateProjectile); // Continue animation
   }
 
+  // Event Listeners
   projectileModeCheckbox.addEventListener("change", updateUIForMode);
   constantVelocityCheckbox.addEventListener(
     "change",
     applyConstantVelocityState
   );
+
+  // Input event listeners to update button states dynamically
   initialVelocityInput.addEventListener("input", () => {
     if (constantVelocityCheckbox.checked) {
-      finalVelocityInput.value = initialVelocityInput.value;
+      finalVelocityInput.value = initialVelocityInput.value; // Keep final velocity synced in constant mode
     }
     updateCalculateButtonState();
   });
@@ -757,10 +843,9 @@ document.addEventListener("DOMContentLoaded", function () {
   timeInput.addEventListener("input", updateCalculateButtonState);
   displacementInput.addEventListener("input", updateCalculateButtonState);
   initialHeightInput.addEventListener("input", updateCalculateButtonState);
-  launchAngleInput.addEventListener("input", () => {
-    updateCalculateButtonState();
-  });
+  launchAngleInput.addEventListener("input", updateCalculateButtonState);
 
+  // Calculate button click handler
   calculateButton.addEventListener("click", function () {
     if (projectileModeCheckbox.checked) {
       handleProjectileCalculation();
@@ -769,13 +854,15 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   });
 
+  // Start Simulation button click handler
   startButton.addEventListener("click", function () {
     if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
+      cancelAnimationFrame(animationFrameId); // Cancel any ongoing animation
     }
-    simulationStartTime = null;
+    simulationStartTime = null; // Reset simulation time
 
     if (projectileModeCheckbox.checked) {
+      // Validate inputs for projectile simulation start
       const v0 = parseFloat(initialVelocityInput.value);
       const h0 = parseFloat(initialHeightInput.value);
       const angleDeg = parseFloat(launchAngleInput.value);
@@ -799,9 +886,9 @@ document.addEventListener("DOMContentLoaded", function () {
         return;
       }
       errorMessageDiv.classList.add("hidden");
-      animationFrameId = requestAnimationFrame(simulateProjectile);
+      animationFrameId = requestAnimationFrame(simulateProjectile); // Start projectile simulation
     } else {
-      // Kinematic mode simulation start logic revised
+      // Kinematic mode simulation start logic
       let v0 = parseFloat(initialVelocityInput.value);
       let vf = parseFloat(finalVelocityInput.value);
       let a = parseFloat(accelerationInput.value);
@@ -817,32 +904,19 @@ document.addEventListener("DOMContentLoaded", function () {
 
       let canStartKinematicSimulation = false;
 
-      // Rule 1: Constant Velocity - need V0 and (T or D)
+      // Check if enough information is present to start kinematic simulation
       if (constantVelocityCheckbox.checked) {
         if (v0 !== null && (t !== null || d !== null)) {
           canStartKinematicSimulation = true;
         }
       } else {
-        // Rule 2: General Kinematic - need at least one known velocity (v0 or vf) AND two other known variables
-        // We can leverage the `handleKinematicCalculation` to derive missing values,
-        // so the actual start condition just needs to ensure *enough* information is present
-        // to allow that calculation to succeed and provide needed values for simulation.
-        // A simpler check: If the 'Calculate' button is enabled, then we have enough info to simulate.
-        // Or if v0 is present, and at least one other parameter (a, t, d) is present.
-        // Or if vf is present, and at least two other parameters are present to derive v0, a, t, d.
-
-        // More explicit checks for simulation start:
-        // We primarily need V0, and then A or T or D.
         if (v0 !== null && (a !== null || t !== null || d !== null)) {
           canStartKinematicSimulation = true;
         } else if (vf !== null) {
-          // If starting with Vf but no V0, need more info to derive V0 for simulation start
-          // E.g., Vf, A, T -> can get V0. Vf, A, D -> can get V0. Vf, T, D -> can get V0.
           const knownCountForVfStart = [vf, a, t, d].filter(
             (val) => val !== null
           ).length;
           if (knownCountForVfStart >= 3) {
-            // Minimum three knowns to derive all others
             canStartKinematicSimulation = true;
           }
         }
@@ -857,30 +931,33 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       errorMessageDiv.classList.add("hidden");
-      // Call handleKinematicCalculation here to ensure all solvable values are computed
+      // Call handleKinematicCalculation to ensure all solvable values are computed
       // and available in the output spans before simulation starts.
       handleKinematicCalculation();
-      animationFrameId = requestAnimationFrame(simulateKinematic);
+      animationFrameId = requestAnimationFrame(simulateKinematic); // Start kinematic simulation
     }
   });
 
+  // Reset button click handler
   resetButton.addEventListener("click", function () {
     if (animationFrameId) {
-      cancelAnimationFrame(animationFrameId);
+      cancelAnimationFrame(animationFrameId); // Cancel any ongoing animation
     }
-    simulationStartTime = null;
-    clearCanvas();
+    simulationStartTime = null; // Reset simulation time
+    clearCanvas(); // Clear the simulation canvas
 
+    // Reset all input fields
     allInputElements.forEach((input) => {
       input.value = "";
-      input.disabled = false;
-      input.classList.remove("bg-gray-200");
+      input.disabled = false; // Ensure inputs are enabled
+      input.classList.remove("bg-gray-200"); // Remove disabled styling
     });
-    constantVelocityCheckbox.checked = false;
-    projectileModeCheckbox.checked = false;
-    updateUIForMode();
-    clearOutputFields();
+    constantVelocityCheckbox.checked = false; // Uncheck constant velocity
+    projectileModeCheckbox.checked = false; // Uncheck projectile mode
+    updateUIForMode(); // Update UI to reflect default (kinematic) state
+    clearOutputFields(); // Clear output fields
   });
 
+  // Initial UI setup when the page loads
   updateUIForMode();
 });
