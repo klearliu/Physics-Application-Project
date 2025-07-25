@@ -1,10 +1,9 @@
 /**
- * Initializes all button and input event listeners.
+ * Initializes all button event listeners.
  * This function should be called from script.js after the DOM is loaded
  * and all necessary elements/functions are available.
  * @param {object} params - An object containing all necessary DOM elements and functions.
  * @param {HTMLElement} params.projectileModeCheckbox - The checkbox for projectile mode.
- * @param {HTMLElement} params.constantVelocityCheckbox - The checkbox for constant velocity.
  * @param {HTMLElement} params.initialVelocityInput - Input for initial velocity.
  * @param {HTMLElement} params.finalVelocityInput - Input for final velocity.
  * @param {HTMLElement} params.accelerationInput - Input for acceleration/gravity.
@@ -16,23 +15,24 @@
  * @param {HTMLElement} params.startButton - The start simulation button.
  * @param {HTMLElement} params.resetButton - The reset button.
  * @param {HTMLElement} params.errorMessageDiv - The error message display div.
- * @param {function} params.updateUIForMode - Function to update UI based on mode.
- * @param {function} params.applyConstantVelocityState - Function to apply constant velocity state.
- * @param {function} params.updateCalculateButtonState - Function to update button states.
- * @param {function} params.handleKinematicCalculation - Function to perform kinematic calculations.
- * @param {function} params.handleProjectileCalculation - Function to perform projectile calculations.
- * @param {function} params.simulateKinematic - Function to start kinematic simulation.
- * @param {function} params.simulateProjectile - Function to start projectile simulation.
- * @param {function} params.clearCanvas - Function to clear the simulation canvas.
+ * @param {function} params.handleKinematicCalculation - Function to perform kinematic calculations (from kinematics.js).
+ * @param {function} params.handleProjectileCalculation - Function to perform projectile calculations (from script.js).
+ * @param {function} params.simulateKinematic - Function to start kinematic simulation (from kinematics.js).
+ * @param {function} params.simulateProjectile - Function to start projectile simulation (from script.js).
+ * @param {function} params.clearCanvas - Function to clear the simulation canvas (from script.js).
+ * @param {function} params.clearOutputFields - Function to clear output fields (from script.js).
+ * @param {function} params.updateUIForMode - Function to update UI based on mode (from controls.js).
  * @param {{current: number|null}} params.animationFrameIdRef - Reference to the animation frame ID.
  * @param {{current: number|null}} params.simulationStartTimeRef - Reference to the simulation start time.
  * @param {function} params.setSimulationStartTime - Helper to set simulation start time.
  * @param {Array<HTMLElement>} params.allInputElements - Array of all input elements.
+ * @param {CanvasRenderingContext2D} params.ctx - The canvas 2D rendering context.
+ * @param {HTMLCanvasElement} params.canvas - The HTML canvas element.
+ * @param {function} params.drawObject - Function to draw the object.
  */
 function initializeButtonListeners(params) {
   const {
     projectileModeCheckbox,
-    constantVelocityCheckbox,
     initialVelocityInput,
     finalVelocityInput,
     accelerationInput,
@@ -44,40 +44,21 @@ function initializeButtonListeners(params) {
     startButton,
     resetButton,
     errorMessageDiv,
-    updateUIForMode,
-    applyConstantVelocityState,
-    updateCalculateButtonState,
-    handleKinematicCalculation, // From kinematics.js
-    handleProjectileCalculation, // From script.js
-    simulateKinematic, // From kinematics.js
-    simulateProjectile, // From script.js
+    handleKinematicCalculation,
+    handleProjectileCalculation,
+    simulateKinematic,
+    simulateProjectile,
     clearCanvas,
+    clearOutputFields,
+    updateUIForMode,
     animationFrameIdRef,
     simulationStartTimeRef,
     setSimulationStartTime,
     allInputElements,
+    ctx,
+    canvas,
+    drawObject,
   } = params;
-
-  // Event Listeners
-  projectileModeCheckbox.addEventListener("change", updateUIForMode);
-  constantVelocityCheckbox.addEventListener(
-    "change",
-    applyConstantVelocityState
-  );
-
-  // Input event listeners to update button states dynamically
-  initialVelocityInput.addEventListener("input", () => {
-    if (constantVelocityCheckbox.checked) {
-      finalVelocityInput.value = initialVelocityInput.value; // Keep final velocity synced in constant mode
-    }
-    updateCalculateButtonState();
-  });
-  finalVelocityInput.addEventListener("input", updateCalculateButtonState);
-  accelerationInput.addEventListener("input", updateCalculateButtonState);
-  timeInput.addEventListener("input", updateCalculateButtonState);
-  displacementInput.addEventListener("input", updateCalculateButtonState);
-  initialHeightInput.addEventListener("input", updateCalculateButtonState);
-  launchAngleInput.addEventListener("input", updateCalculateButtonState);
 
   // Calculate button click handler
   calculateButton.addEventListener("click", function () {
@@ -139,7 +120,8 @@ function initializeButtonListeners(params) {
       let canStartKinematicSimulation = false;
 
       // Check if enough information is present to start kinematic simulation
-      if (constantVelocityCheckbox.checked) {
+      if (params.constantVelocityCheckbox.checked) {
+        // Need to access constantVelocityCheckbox from params
         if (v0 !== null && (t !== null || d !== null)) {
           canStartKinematicSimulation = true;
         }
@@ -171,9 +153,9 @@ function initializeButtonListeners(params) {
       animationFrameIdRef.current = requestAnimationFrame((time) =>
         simulateKinematic(
           time,
-          params.ctx, // Pass ctx to simulateKinematic
-          params.canvas, // Pass canvas to simulateKinematic
-          params.drawObject, // Pass drawObject to simulateKinematic
+          ctx,
+          canvas,
+          drawObject,
           cancelAnimationFrame,
           animationFrameIdRef,
           simulationStartTimeRef,
@@ -197,7 +179,7 @@ function initializeButtonListeners(params) {
       input.disabled = false; // Ensure inputs are enabled
       input.classList.remove("bg-gray-200"); // Remove disabled styling
     });
-    constantVelocityCheckbox.checked = false; // Uncheck constant velocity
+    params.constantVelocityCheckbox.checked = false; // Uncheck constant velocity (access from params)
     projectileModeCheckbox.checked = false; // Uncheck projectile mode
     updateUIForMode(); // Update UI to reflect default (kinematic) state
     clearOutputFields(); // Clear output fields
