@@ -1,5 +1,3 @@
-// script.js
-
 // --- Global/App-wide DOM Element References ---
 // These are accessed by multiple modules, so they are declared here once.
 const projectileModeCheckbox = document.getElementById("projectile-mode");
@@ -20,12 +18,20 @@ const resetButton = document.getElementById("reset-btn");
 const errorMessageDiv = document.getElementById("error-message");
 
 const accelerationLabel = document.getElementById("acceleration-label");
+const initialHeightLabel = document.getElementById("initial-height-label");
+const launchAngleLabel = document.getElementById("launch-angle-label");
 const constantVelocityControlRow = document.getElementById(
   "constant-velocity-control-row"
 );
 const resultsGrid = document.getElementById("results-grid");
 const solution2Container = document.getElementById("solution2-container");
 const displacementLabel = document.querySelector('label[for="displacement"]');
+
+// NEW INPUT/LABEL REFERENCES
+const maxHeightInput = document.getElementById("max-height");
+const maxHeightLabel = document.getElementById("max-height-label");
+const maxHeightTimeInput = document.getElementById("max-height-time");
+const maxHeightTimeLabel = document.getElementById("max-height-time-label");
 
 // Output spans for Solution 1 (used by both kinematic and projectile)
 const solution1V0 = document.getElementById("output-v0-1");
@@ -38,6 +44,16 @@ const solution1H = document.getElementById("output-h-1");
 const solution1HRow = document.getElementById("output-h-1-row");
 const solution1Angle = document.getElementById("output-angle-1");
 const solution1AngleRow = document.getElementById("output-angle-1-row");
+
+// NEW OUTPUT REFERENCES
+const solution1MaxHeight = document.getElementById("output-max-height");
+const solution1MaxHeightRow = document.getElementById("output-max-height-row");
+const solution1MaxHeightTime = document.getElementById(
+  "output-max-height-time"
+);
+const solution1MaxHeightTimeRow = document.getElementById(
+  "output-max-height-time-row"
+);
 
 // Output spans for Solution 2 (currently hidden, but kept for consistency)
 const solution2V0 = document.getElementById("output-v0-2");
@@ -59,6 +75,8 @@ const allInputElements = [
   displacementInput,
   initialHeightInput,
   launchAngleInput,
+  maxHeightInput,
+  maxHeightTimeInput,
 ];
 
 // --- Canvas and Animation State ---
@@ -91,6 +109,8 @@ function clearOutputFields() {
   outputSpans.forEach((span) => (span.textContent = "-"));
   solution1HRow.classList.add("hidden");
   solution1AngleRow.classList.add("hidden");
+  solution1MaxHeightRow.classList.add("hidden");
+  solution1MaxHeightTimeRow.classList.add("hidden");
   solution2HRow.classList.add("hidden");
   solution2AngleRow.classList.add("hidden");
   solution1ARow.classList.remove("hidden"); // Ensure acceleration output is shown by default
@@ -119,10 +139,16 @@ document.addEventListener("DOMContentLoaded", function () {
     resetButton,
     errorMessageDiv,
     accelerationLabel,
+    initialHeightLabel,
+    launchAngleLabel,
     constantVelocityControlRow,
     resultsGrid,
     solution2Container,
     displacementLabel,
+    maxHeightInput,
+    maxHeightLabel,
+    maxHeightTimeInput,
+    maxHeightTimeLabel,
     solution1V0,
     solution1Vf,
     solution1A,
@@ -133,6 +159,10 @@ document.addEventListener("DOMContentLoaded", function () {
     solution1HRow,
     solution1Angle,
     solution1AngleRow,
+    solution1MaxHeight,
+    solution1MaxHeightRow,
+    solution1MaxHeightTime,
+    solution1MaxHeightTimeRow,
     solution2V0,
     solution2Vf,
     solution2A,

@@ -1,5 +1,3 @@
-// buttons.js
-
 /**
  * Initializes all button event listeners.
  * This function should be called from script.js after the DOM is loaded
@@ -13,6 +11,8 @@
  * @param {HTMLElement} params.displacementInput - Input for displacement/horizontal distance.
  * @param {HTMLElement} params.initialHeightInput - Input for initial height (projectile).
  * @param {HTMLElement} params.launchAngleInput - Input for launch angle (projectile).
+ * @param {HTMLElement} params.maxHeightInput - Input for max height.
+ * @param {HTMLElement} params.maxHeightTimeInput - Input for max height time.
  * @param {HTMLElement} params.calculateButton - The calculate button.
  * @param {HTMLElement} params.startButton - The start simulation button.
  * @param {HTMLElement} params.resetButton - The reset button.
@@ -43,6 +43,8 @@ function initializeButtonListeners(params) {
     displacementInput,
     initialHeightInput,
     launchAngleInput,
+    maxHeightInput,
+    maxHeightTimeInput,
     calculateButton,
     startButton,
     resetButton,

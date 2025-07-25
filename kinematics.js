@@ -1,5 +1,3 @@
-// kinematics.js
-
 /**
  * Solves a quadratic equation for its roots.
  * @param {number} a - Coefficient of the squared term.

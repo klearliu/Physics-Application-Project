@@ -19,6 +19,10 @@
  * @param {HTMLElement} params.solution1D - Output span for displacement.
  * @param {HTMLElement} params.solution1HRow - Output row for initial height.
  * @param {HTMLElement} params.solution1AngleRow - Output row for launch angle.
+ * @param {HTMLElement} params.solution1MaxHeight - Output span for max height.
+ * @param {HTMLElement} params.solution1MaxHeightRow - Output row for max height.
+ * @param {HTMLElement} params.solution1MaxHeightTime - Output span for max height time.
+ * @param {HTMLElement} params.solution1MaxHeightTimeRow - Output row for max height time.
  * @param {HTMLElement} params.solution2Container - Container for solution 2.
  * @param {HTMLElement} params.solution2V0 - Output span for initial velocity (solution 2).
  * @param {HTMLElement} params.solution2Vf - Output span for final velocity (solution 2).
@@ -57,6 +61,10 @@ function initializeSimulation(params) {
     solution1D,
     solution1HRow,
     solution1AngleRow,
+    solution1MaxHeight,
+    solution1MaxHeightRow,
+    solution1MaxHeightTime,
+    solution1MaxHeightTimeRow,
     solution2Container,
     solution2V0,
     solution2Vf,
@@ -211,8 +219,20 @@ function initializeSimulation(params) {
    * @param {number} d - Horizontal range.
    * @param {number} h0 - Initial height.
    * @param {number} angle - Launch angle in degrees.
+   * @param {number} maxHeight - Maximum height reached.
+   * @param {number} maxHeightTime - Time to reach max height.
    */
-  function displayProjectileResults(v0, vf, a, t, d, h0, angle) {
+  function displayProjectileResults(
+    v0,
+    vf,
+    a,
+    t,
+    d,
+    h0,
+    angle,
+    maxHeight,
+    maxHeightTime
+  ) {
     solution1A.textContent = a !== null && !isNaN(a) ? a.toFixed(2) : "-";
     solution1H.textContent = h0 !== null && !isNaN(h0) ? h0.toFixed(2) : "-";
     solution1Angle.textContent =
@@ -221,10 +241,18 @@ function initializeSimulation(params) {
     solution1Vf.textContent = vf !== null && !isNaN(vf) ? vf.toFixed(2) : "-";
     solution1T.textContent = t !== null && !isNaN(t) ? t.toFixed(2) : "-";
     solution1D.textContent = d !== null && !isNaN(d) ? d.toFixed(2) : "-";
+    solution1MaxHeight.textContent =
+      maxHeight !== null && !isNaN(maxHeight) ? maxHeight.toFixed(2) : "-";
+    solution1MaxHeightTime.textContent =
+      maxHeightTime !== null && !isNaN(maxHeightTime)
+        ? maxHeightTime.toFixed(2)
+        : "-";
 
     // Show projectile-specific rows
     solution1HRow.classList.remove("hidden");
     solution1AngleRow.classList.remove("hidden");
+    solution1MaxHeightRow.classList.remove("hidden");
+    solution1MaxHeightTimeRow.classList.remove("hidden");
 
     solution2Container.style.display = "none"; // Ensure second solution panel is hidden
     // Clear second solution panel outputs just in case
@@ -298,19 +326,21 @@ function initializeSimulation(params) {
     const vf_y = v0y + g_effective * t_flight; // Final vertical velocity
     const vf = Math.sqrt(vf_y * vf_y + v0x * v0x); // Final total velocity
 
-    // Calculate maximum height for scaling the canvas
-    let max_y_value;
+    // Calculate maximum height and time to max height
+    let maxHeightTime;
+    let maxHeight;
     if (v0y > 0) {
-      const time_to_peak_from_launch = v0y / g_magnitude;
-      const peak_height_above_launch =
-        v0y * time_to_peak_from_launch -
-        0.5 * g_magnitude * time_to_peak_from_launch * time_to_peak_from_launch;
-      max_y_value = h0 + peak_height_above_launch;
+      maxHeightTime = v0y / g_magnitude;
+      const peakHeightAboveLaunch =
+        v0y * maxHeightTime - 0.5 * g_magnitude * maxHeightTime * maxHeightTime;
+      maxHeight = h0 + peakHeightAboveLaunch;
     } else {
-      max_y_value = h0; // If initial vertical velocity is zero or negative, max height is initial height
+      // If initial vertical velocity is zero or negative, max height is initial height
+      maxHeightTime = 0;
+      maxHeight = h0;
     }
 
-    max_y_value = Math.max(0.1, max_y_value); // Ensure a minimum height for scaling
+    const max_y_value = Math.max(0.1, maxHeight); // Ensure a minimum height for scaling
 
     const paddingFactor = 1.1; // Add some padding to the view
     const canvasWidth = canvas.width;
@@ -342,7 +372,9 @@ function initializeSimulation(params) {
       t_flight,
       range,
       h0,
-      angleDeg
+      angleDeg,
+      maxHeight,
+      maxHeightTime
     );
   }
 

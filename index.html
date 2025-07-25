@@ -106,10 +106,11 @@
                 />
               </div>
 
-              <div id="projectile-inputs-container" class="hidden">
+              <div id="projectile-inputs-container" class="hidden space-y-4">
                 <div>
                   <label
                     for="initial-height"
+                    id="initial-height-label"
                     class="block text-sm font-medium mb-1"
                     >Initial Height [m]</label
                   >
@@ -123,6 +124,7 @@
                 <div>
                   <label
                     for="launch-angle"
+                    id="launch-angle-label"
                     class="block text-sm font-medium mb-1"
                     >Launch Angle [°]</label
                   >
@@ -131,6 +133,34 @@
                     id="launch-angle"
                     class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="ex., 45"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="max-height"
+                    id="max-height-label"
+                    class="block text-sm font-medium mb-1"
+                    >Max Height [m]</label
+                  >
+                  <input
+                    type="number"
+                    id="max-height"
+                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="ex., 15"
+                  />
+                </div>
+                <div>
+                  <label
+                    for="max-height-time"
+                    id="max-height-time-label"
+                    class="block text-sm font-medium mb-1"
+                    >Max Height Time [s]</label
+                  >
+                  <input
+                    type="number"
+                    id="max-height-time"
+                    class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="ex., 1.5"
                   />
                 </div>
               </div>
@@ -230,6 +260,22 @@
                     >-</span
                   >
                   °
+                </p>
+                <p id="output-max-height-row" class="hidden">
+                  Max Height:
+                  <span id="output-max-height" class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  m
+                </p>
+                <p id="output-max-height-time-row" class="hidden">
+                  Max Height Time:
+                  <span
+                    id="output-max-height-time"
+                    class="text-blue-600 font-mono"
+                    >-</span
+                  >
+                  s
                 </p>
               </div>
             </div>
