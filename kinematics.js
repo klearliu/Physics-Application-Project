@@ -1,3 +1,5 @@
+// kinematics.js
+
 /**
  * Solves a quadratic equation for its roots.
  * @param {number} a - Coefficient of the squared term.
@@ -15,74 +17,85 @@ function quadraticRoots(a, b, c) {
 
 /**
  * Displays the calculated kinematic results in the solution panel.
- * Assumes access to global DOM elements for output spans.
  * @param {number} v0 - Initial velocity.
  * @param {number} vf - Final velocity.
  * @param {number} a - Acceleration.
  * @param {number} t - Time.
  * @param {number} d - Displacement.
+ * @param {HTMLElement} solution1V0 - Output span for initial velocity.
+ * @param {HTMLElement} solution1Vf - Output span for final velocity.
+ * @param {HTMLElement} solution1A - Output span for acceleration.
+ * @param {HTMLElement} solution1T - Output span for time.
+ * @param {HTMLElement} solution1D - Output span for displacement.
+ * @param {HTMLElement} solution1HRow - Output row for initial height.
+ * @param {HTMLElement} solution1AngleRow - Output row for launch angle.
+ * @param {HTMLElement} solution2Container - Container for solution 2.
  */
-function displayKinematicResults(v0, vf, a, t, d) {
-  // These elements are assumed to be accessible in the global scope
-  // or passed down from the main script if preferred. For simplicity
-  // in this refactor, we'll assume they're accessible.
-  // In a larger app, you might pass them as parameters or use a state management pattern.
-  const solution1V0 = document.getElementById("output-v0-1");
-  const solution1Vf = document.getElementById("output-vf-1");
-  const solution1A = document.getElementById("output-a-1");
-  const solution1T = document.getElementById("output-t-1");
-  const solution1D = document.getElementById("output-d-1");
-  const solution1HRow = document.getElementById("output-h-1-row");
-  const solution1AngleRow = document.getElementById("output-angle-1-row");
-  const solution2Container = document.getElementById("solution2-container"); // Assuming this is defined in index.html and accessible globally
-
+function displayKinematicResults(
+  v0,
+  vf,
+  a,
+  t,
+  d,
+  solution1V0,
+  solution1Vf,
+  solution1A,
+  solution1T,
+  solution1D,
+  solution1HRow,
+  solution1AngleRow,
+  solution2Container
+) {
   solution1V0.textContent = v0 !== null && !isNaN(v0) ? v0.toFixed(2) : "-";
   solution1Vf.textContent = vf !== null && !isNaN(vf) ? vf.toFixed(2) : "-";
   solution1A.textContent = a !== null && !isNaN(a) ? a.toFixed(2) : "-";
   solution1T.textContent = t !== null && !isNaN(t) ? t.toFixed(2) : "-";
   solution1D.textContent = d !== null && !isNaN(d) ? d.toFixed(2) : "-";
 
-  // Hide projectile-specific rows for kinematic mode
   if (solution1HRow) solution1HRow.classList.add("hidden");
   if (solution1AngleRow) solution1AngleRow.classList.add("hidden");
-  if (solution2Container) solution2Container.style.display = "none"; // Ensure second solution panel is hidden
+  if (solution2Container) solution2Container.style.display = "none";
 }
 
 /**
  * Handles the calculation of unknown kinematic variables based on user inputs.
  * It iteratively applies kinematic equations until all solvable variables are found.
- * Assumes access to input elements and errorMessageDiv.
+ * @param {HTMLElement} initialVelocityInput - Input for initial velocity.
+ * @param {HTMLElement} finalVelocityInput - Input for final velocity.
+ * @param {HTMLElement} accelerationInput - Input for acceleration.
+ * @param {HTMLElement} timeInput - Input for time.
+ * @param {HTMLElement} displacementInput - Input for displacement.
+ * @param {HTMLElement} constantVelocityCheckbox - Checkbox for constant velocity.
+ * @param {HTMLElement} errorMessageDiv - The error message display div.
  */
-function handleKinematicCalculation() {
-  const initialVelocityInput = document.getElementById("initial-velocity");
-  const finalVelocityInput = document.getElementById("final-velocity");
-  const accelerationInput = document.getElementById("acceleration");
-  const timeInput = document.getElementById("time");
-  const displacementInput = document.getElementById("displacement");
-  const constantVelocityCheckbox = document.getElementById("constant-velocity");
-  const errorMessageDiv = document.getElementById("error-message");
-
+function handleKinematicCalculation(
+  initialVelocityInput,
+  finalVelocityInput,
+  accelerationInput,
+  timeInput,
+  displacementInput,
+  constantVelocityCheckbox,
+  errorMessageDiv
+) {
   let v0 = parseFloat(initialVelocityInput.value);
   let vf = parseFloat(finalVelocityInput.value);
   let a = parseFloat(accelerationInput.value);
   let t = parseFloat(timeInput.value);
   let d = parseFloat(displacementInput.value);
 
-  // If constant velocity is checked, force acceleration to 0
   if (constantVelocityCheckbox.checked) {
     a = 0;
   } else {
     a = isNaN(a) ? null : a;
   }
 
-  // Convert NaN inputs to null for consistent checking
   v0 = isNaN(v0) ? null : v0;
   vf = isNaN(vf) ? null : vf;
   t = isNaN(t) ? null : t;
   d = isNaN(d) ? null : d;
 
   let solvedCount = 0;
-  const maxIterations = 10; // Prevent infinite loops in case of unsolvable inputs
+  const maxIterations = 10;
 
   for (let i = 0; i < maxIterations; i++) {
     let initialSolvedCount = [v0, vf, a, t, d].filter(
@@ -107,7 +120,6 @@ function handleKinematicCalculation() {
       a = (2 * (d - v0 * t)) / (t * t);
     else if (d !== null && v0 !== null && a !== null && t === null) {
       const roots = quadraticRoots(0.5 * a, v0, -d);
-      // Take the positive root for time
       if (roots.length === 1 && roots[0] >= 0) t = roots[0];
       else if (roots.length === 2) {
         const positiveRoots = roots.filter((root) => root >= 0);
@@ -118,10 +130,10 @@ function handleKinematicCalculation() {
     // Equation 3: vf^2 = v0^2 + 2*a*d
     if (v0 !== null && a !== null && d !== null && vf === null) {
       const vf_squared = v0 * v0 + 2 * a * d;
-      if (vf_squared >= 0) vf = Math.sqrt(vf_squared); // Take positive square root for speed
+      if (vf_squared >= 0) vf = Math.sqrt(vf_squared);
     } else if (vf !== null && a !== null && d !== null && v0 === null) {
       const v0_squared = vf * vf - 2 * a * d;
-      if (v0_squared >= 0) v0 = Math.sqrt(v0_squared); // Take positive square root for speed
+      if (v0_squared >= 0) v0 = Math.sqrt(v0_squared);
     } else if (
       vf !== null &&
       v0 !== null &&
@@ -153,17 +165,14 @@ function handleKinematicCalculation() {
       (val) => val !== null
     ).length;
 
-    // If no new variables were solved in this iteration, break the loop
     if (currentSolvedCount === initialSolvedCount) {
       break;
     }
     solvedCount = currentSolvedCount;
   }
 
-  // Display error if not all 5 variables could be solved
   if (solvedCount < 5) {
     if (errorMessageDiv) {
-      // Ensure errorMessageDiv exists before using
       errorMessageDiv.textContent =
         "Could not solve for all unknowns with the given inputs. Check your values.";
       errorMessageDiv.classList.remove("hidden");
@@ -172,7 +181,22 @@ function handleKinematicCalculation() {
     if (errorMessageDiv) errorMessageDiv.classList.add("hidden");
   }
 
-  displayKinematicResults(v0, vf, a, t, d);
+  // Pass output elements to display function
+  displayKinematicResults(
+    v0,
+    vf,
+    a,
+    t,
+    d,
+    document.getElementById("output-v0-1"),
+    document.getElementById("output-vf-1"),
+    document.getElementById("output-a-1"),
+    document.getElementById("output-t-1"),
+    document.getElementById("output-d-1"),
+    document.getElementById("output-h-1-row"),
+    document.getElementById("output-angle-1-row"),
+    document.getElementById("solution2-container")
+  );
 }
 
 /**
@@ -198,31 +222,23 @@ function simulateKinematic(
 ) {
   if (!simulationStartTimeRef.current) {
     setSimulationStartTime(currentTime);
-    // Ensure all kinematic values are calculated before starting simulation
-    handleKinematicCalculation();
+    // handleKinematicCalculation is called by buttons.js before starting simulation
   }
-  const elapsedTime = (currentTime - simulationStartTimeRef.current) / 1000; // Time in seconds
+  const elapsedTime = (currentTime - simulationStartTimeRef.current) / 1000;
 
-  // These elements are assumed to be accessible in the global scope.
   const solution1V0 = document.getElementById("output-v0-1");
   const solution1A = document.getElementById("output-a-1");
   const solution1T = document.getElementById("output-t-1");
   const solution1D = document.getElementById("output-d-1");
 
-  // Use the *calculated* values for simulation
   const v0 = parseFloat(solution1V0.textContent);
   const a = parseFloat(solution1A.textContent);
-  const t_solved = parseFloat(solution1T.textContent); // Solved total time
-  const d_solved = parseFloat(solution1D.textContent); // Solved total displacement
+  const t_solved = parseFloat(solution1T.textContent);
+  const d_solved = parseFloat(solution1D.textContent);
 
-  // Calculate current displacement
   let currentDisplacement =
     v0 * elapsedTime + 0.5 * a * elapsedTime * elapsedTime;
 
-  // Stop conditions:
-  // 1. If a total time (t_solved) was calculated, stop when elapsed time reaches it.
-  // 2. If a total displacement (d_solved) was calculated, stop when current displacement reaches it.
-  // Use a small tolerance for floating point comparisons
   const tolerance = 0.01;
   if (
     (t_solved && elapsedTime >= t_solved - tolerance) ||
@@ -230,14 +246,13 @@ function simulateKinematic(
       Math.abs(currentDisplacement) >= Math.abs(d_solved) - tolerance &&
       Math.sign(currentDisplacement) === Math.sign(d_solved))
   ) {
-    // Ensure the object ends exactly at the calculated final displacement
     drawObject(d_solved, 0);
     cancelAnimationFrame(animationFrameIdRef.current);
-    setSimulationStartTime(null); // Reset simulation start time
+    setSimulationStartTime(null);
     return;
   }
 
-  drawObject(currentDisplacement, 0); // Draw object at current position
+  drawObject(currentDisplacement, 0);
 
   animationFrameIdRef.current = requestAnimationFrame((time) =>
     simulateKinematic(
@@ -250,5 +265,5 @@ function simulateKinematic(
       simulationStartTimeRef,
       setSimulationStartTime
     )
-  ); // Continue animation
+  );
 }

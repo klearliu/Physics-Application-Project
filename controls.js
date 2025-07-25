@@ -1,3 +1,5 @@
+// controls.js
+
 /**
  * Initializes all input-related logic and event listeners.
  * This function should be called from script.js after the DOM is loaded
@@ -11,7 +13,7 @@
  * @param {HTMLElement} params.timeInput - Input for time.
  * @param {HTMLElement} params.displacementInput - Input for displacement/horizontal distance.
  * @param {HTMLElement} params.initialHeightInput - Input for initial height (projectile).
- * @param {HTMLElement} params.launchAngleInput - Input for launch angle (projectile).
+ * @param {HTMLElement} params.HTMLElement - Input for launch angle (projectile).
  * @param {HTMLElement} params.calculateButton - The calculate button.
  * @param {HTMLElement} params.startButton - The start simulation button.
  * @param {HTMLElement} params.errorMessageDiv - The error message display div.
@@ -22,8 +24,10 @@
  * @param {HTMLElement} params.resultsGrid - The results grid container.
  * @param {HTMLElement} params.solution1HRow - Output row for initial height (solution 1).
  * @param {HTMLElement} params.solution1AngleRow - Output row for launch angle (solution 1).
+ * @param {HTMLElement} params.solution1ARow - Output row for acceleration (solution 1).
  * @param {HTMLElement} params.solution2HRow - Output row for initial height (solution 2).
  * @param {HTMLElement} params.solution2AngleRow - Output row for launch angle (solution 2).
+ * @param {HTMLElement} params.solution2ARow - Output row for acceleration (solution 2).
  * @param {HTMLElement} params.solution2Container - Container for solution 2.
  * @param {function} params.clearOutputFields - Function to clear all output fields.
  * @param {Array<HTMLElement>} params.allInputElements - Array of all input elements.
@@ -49,8 +53,10 @@ function initializeControls(params) {
     resultsGrid,
     solution1HRow,
     solution1AngleRow,
+    solution1ARow,
     solution2HRow,
     solution2AngleRow,
+    solution2ARow,
     solution2Container,
     clearOutputFields,
     allInputElements,
@@ -214,6 +220,8 @@ function initializeControls(params) {
 
       solution1HRow.classList.remove("hidden"); // Show projectile-specific output rows
       solution1AngleRow.classList.remove("hidden");
+      solution1ARow.classList.add("hidden"); // Hide acceleration output for solution 1
+      solution2ARow.classList.add("hidden"); // Hide acceleration output for solution 2
     } else {
       solution2Container.style.display = "none"; // Hide second solution panel
       resultsGrid.classList.remove("md:grid-cols-2"); // Ensure single column layout
@@ -222,6 +230,8 @@ function initializeControls(params) {
       solution1AngleRow.classList.add("hidden");
       solution2HRow.classList.add("hidden");
       solution2AngleRow.classList.add("hidden");
+      solution1ARow.classList.remove("hidden"); // Show acceleration output for solution 1
+      solution2ARow.classList.remove("hidden"); // Show acceleration output for solution 2
     }
   }
 
@@ -303,6 +313,6 @@ function initializeControls(params) {
     updateCalculateButtonState,
     updateUIForMode,
     applyConstantVelocityState,
-    updateProjectilePanelVisibility, // Expose this if buttons.js needs to call it
+    updateProjectilePanelVisibility,
   };
 }
