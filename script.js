@@ -40,6 +40,7 @@ const solution1A = document.getElementById("output-a-1");
 const solution1ARow = document.getElementById("output-a-1-row");
 const solution1T = document.getElementById("output-t-1");
 const solution1D = document.getElementById("output-d-1");
+const solution1DLabel = document.getElementById("output-d-1-label"); // New line here
 const solution1H = document.getElementById("output-h-1");
 const solution1HRow = document.getElementById("output-h-1-row");
 const solution1Angle = document.getElementById("output-angle-1");
@@ -62,6 +63,7 @@ const solution2A = document.getElementById("output-a-2");
 const solution2ARow = document.getElementById("output-a-2-row");
 const solution2T = document.getElementById("output-t-2");
 const solution2D = document.getElementById("output-d-2");
+const solution2DLabel = document.getElementById("output-d-2-label"); // New line here
 const solution2H = document.getElementById("output-h-2");
 const solution2HRow = document.getElementById("output-h-2-row");
 const solution2Angle = document.getElementById("output-angle-2");
@@ -155,6 +157,7 @@ document.addEventListener("DOMContentLoaded", function () {
     solution1ARow,
     solution1T,
     solution1D,
+    solution1DLabel, // New property here
     solution1H,
     solution1HRow,
     solution1Angle,
@@ -169,6 +172,7 @@ document.addEventListener("DOMContentLoaded", function () {
     solution2ARow,
     solution2T,
     solution2D,
+    solution2DLabel, // New property here
     solution2H,
     solution2HRow,
     solution2Angle,

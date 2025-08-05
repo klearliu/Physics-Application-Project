@@ -35,6 +35,8 @@
  * @param {HTMLElement} params.solution2AngleRow - Output row for launch angle (solution 2).
  * @param {HTMLElement} params.solution2ARow - Output row for acceleration (solution 2).
  * @param {HTMLElement} params.solution2Container - Container for solution 2.
+ * @param {HTMLElement} params.solution1DLabel - Output label for displacement in solution 1.
+ * @param {HTMLElement} params.solution2DLabel - Output label for displacement in solution 2.
  * @param {function} params.clearOutputFields - Function to clear all output fields.
  * @param {Array<HTMLElement>} params.allInputElements - Array of all input elements.
  */
@@ -72,6 +74,8 @@ function initializeControls(params) {
     solution2AngleRow,
     solution2ARow,
     solution2Container,
+    solution1DLabel, // New parameter
+    solution2DLabel, // New parameter
     clearOutputFields,
     allInputElements,
   } = params;
@@ -81,6 +85,9 @@ function initializeControls(params) {
   const originalLaunchAngleLabelText = launchAngleLabel.textContent;
   const originalMaxHeightLabelText = maxHeightLabel.textContent;
   const originalMaxHeightTimeLabelText = maxHeightTimeLabel.textContent;
+  // Store original displacement output label texts
+  const originalSolution1DLabelText = solution1DLabel.textContent;
+  const originalSolution2DLabelText = solution2DLabel.textContent;
 
   /**
    * Updates the disabled state of the Calculate and Start Simulation buttons
@@ -291,6 +298,18 @@ function initializeControls(params) {
     displacementLabel.textContent = isProjectile
       ? "Horizontal Distance [m]"
       : "Displacement [m]";
+
+    // Update label for displacement output in Solution panels
+    if (solution1DLabel) {
+      solution1DLabel.textContent = isProjectile
+        ? "Horizontal Distance"
+        : originalSolution1DLabelText;
+    }
+    if (solution2DLabel) {
+      solution2DLabel.textContent = isProjectile
+        ? "Horizontal Distance"
+        : originalSolution2DLabelText;
+    }
 
     // Toggle visibility of projectile-specific input container
     projectileInputsContainer.classList.toggle("hidden", !isProjectile);
