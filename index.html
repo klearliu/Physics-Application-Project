@@ -89,11 +89,14 @@
                 <input
                   type="number"
                   id="time"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="ex., 2"
+                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 read-only:bg-gray-100 read-only:text-gray-500 read-only:cursor-not-allowed"
                 />
               </div>
               <div id="time-range-container" class="ml-4 mt-2 space-y-2">
+                <p id="time-error" class="text-red-600 text-sm hidden">
+                  Final Time must be greater than Initial Time.
+                </p>
+
                 <div>
                   <label
                     for="initial-time"
@@ -104,8 +107,10 @@
                   <input
                     type="number"
                     id="initial-time"
+                    value="0"
                     class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="ex., 0"
+                    min="0"
                   />
                 </div>
                 <div>
@@ -120,6 +125,7 @@
                     id="final-time"
                     class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="ex., 2"
+                    min="0"
                   />
                 </div>
               </div>
@@ -131,8 +137,7 @@
                 <input
                   type="number"
                   id="displacement"
-                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="ex., 100"
+                  class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 read-only:bg-gray-100 read-only:text-gray-500 read-only:cursor-not-allowed"
                 />
               </div>
               <div id="position-range-container" class="ml-4 mt-2 space-y-2">
@@ -146,8 +151,10 @@
                   <input
                     type="number"
                     id="initial-position"
+                    value="0"
                     class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="ex., 0"
+                    min="0"
                   />
                 </div>
                 <div>
@@ -162,6 +169,7 @@
                     id="final-position"
                     class="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="ex., 100"
+                    min="0"
                   />
                 </div>
               </div>
@@ -398,5 +406,99 @@
     <script src="script.js"></script>
     <script src="controls.js"></script>
     <script src="buttons.js"></script>
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        const modeToggle = document.getElementById("projectile-mode");
+
+        const timeInput = document.getElementById("time");
+        const initialTimeInput = document.getElementById("initial-time");
+        const finalTimeInput = document.getElementById("final-time");
+
+        const displacementInput = document.getElementById("displacement");
+        const initialPositionInput =
+          document.getElementById("initial-position");
+        const finalPositionInput = document.getElementById("final-position");
+
+        function updateTimeDifference() {
+          const t0Raw = initialTimeInput.value;
+          const t1Raw = finalTimeInput.value;
+          const errorEl = document.getElementById("time-error");
+
+          if (t0Raw === "" && t1Raw === "") {
+            timeInput.value = "";
+            errorEl.classList.add("hidden");
+            return;
+          }
+
+          const t0 = parseFloat(t0Raw) || 0;
+          const t1 = parseFloat(t1Raw);
+
+          if (!isNaN(t1)) {
+            if (t1 > t0) {
+              timeInput.value = t1 - t0;
+              errorEl.classList.add("hidden");
+            } else {
+              timeInput.value = "";
+              errorEl.classList.remove("hidden");
+            }
+          }
+        }
+
+        function updateDisplacementDifference() {
+          const x0Raw = initialPositionInput.value;
+          const x1Raw = finalPositionInput.value;
+
+          if (x0Raw === "" && x1Raw === "") {
+            displacementInput.value = "";
+            return;
+          }
+
+          const x0 = parseFloat(x0Raw) || 0;
+          const x1 = parseFloat(x1Raw);
+          if (!isNaN(x1)) {
+            displacementInput.value = x1 - x0;
+          }
+        }
+
+        function applyReadOnlyStyles(input, isReadOnly) {
+          input.readOnly = isReadOnly;
+          if (isReadOnly) {
+            input.classList.add("read-only");
+          } else {
+            input.classList.remove("read-only");
+          }
+        }
+
+        function handleModeToggle() {
+          const is2D = modeToggle.checked;
+
+          const makeReadOnly = !is2D;
+
+          applyReadOnlyStyles(timeInput, makeReadOnly);
+          applyReadOnlyStyles(displacementInput, makeReadOnly);
+
+          if (makeReadOnly) {
+            updateTimeDifference();
+            updateDisplacementDifference();
+          }
+        }
+
+        // Input listeners
+        [initialTimeInput, finalTimeInput].forEach((el) =>
+          el.addEventListener("input", () => {
+            if (!modeToggle.checked) updateTimeDifference();
+          })
+        );
+
+        [initialPositionInput, finalPositionInput].forEach((el) =>
+          el.addEventListener("input", () => {
+            if (!modeToggle.checked) updateDisplacementDifference();
+          })
+        );
+
+        modeToggle.addEventListener("change", handleModeToggle);
+        handleModeToggle(); // Initial call
+      });
+    </script>
   </body>
 </html>
