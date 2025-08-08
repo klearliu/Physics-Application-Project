@@ -39,8 +39,6 @@
  * @param {HTMLElement} params.solution2DLabel - Output label for displacement in solution 2.
  * @param {function} params.clearOutputFields - Function to clear all output fields.
  * @param {Array<HTMLElement>} params.allInputElements - Array of all input elements.
- * @param {HTMLElement} params.timeRangeContainer - ADDED: The container for time range inputs.
- * @param {HTMLElement} params.positionRangeContainer - ADDED: The container for position range inputs.
  */
 function initializeControls(params) {
   const {
@@ -80,8 +78,6 @@ function initializeControls(params) {
     solution2DLabel, // New parameter
     clearOutputFields,
     allInputElements,
-    timeRangeContainer, // ADDED: Destructure the new container
-    positionRangeContainer, // ADDED: Destructure the new container
   } = params;
 
   // Store original label texts to restore them when mode changes
@@ -320,10 +316,6 @@ function initializeControls(params) {
 
     // Toggle visibility of constant velocity control row
     constantVelocityControlRow.classList.toggle("hidden", isProjectile);
-
-    // ADDED: Toggle visibility of time and position range containers
-    timeRangeContainer.classList.toggle("hidden", isProjectile);
-    positionRangeContainer.classList.toggle("hidden", isProjectile);
 
     // Update label for acceleration input
     accelerationLabel.textContent = isProjectile

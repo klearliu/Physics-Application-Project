@@ -33,12 +33,6 @@ const maxHeightLabel = document.getElementById("max-height-label");
 const maxHeightTimeInput = document.getElementById("max-height-time");
 const maxHeightTimeLabel = document.getElementById("max-height-time-label");
 
-// ADDED: References to the time and position range containers
-const timeRangeContainer = document.getElementById("time-range-container");
-const positionRangeContainer = document.getElementById(
-  "position-range-container"
-);
-
 // Output spans for Solution 1 (used by both kinematic and projectile)
 const solution1V0 = document.getElementById("output-v0-1");
 const solution1Vf = document.getElementById("output-vf-1");
@@ -184,10 +178,6 @@ document.addEventListener("DOMContentLoaded", function () {
     solution2Angle,
     solution2AngleRow,
     allInputElements,
-
-    // ADDED: Include the new container references in the appContext
-    timeRangeContainer,
-    positionRangeContainer,
 
     // Canvas and Animation State (passed as references)
     canvas,
